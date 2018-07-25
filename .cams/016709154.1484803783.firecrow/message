@@ -1,0 +1,1 @@
+much better solution, to use the itme from the cid than instatiate an entire struct commit object

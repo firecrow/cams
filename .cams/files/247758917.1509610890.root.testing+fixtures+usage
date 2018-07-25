@@ -1,0 +1,2 @@
+cams
+    help|init|commit|list|checkout|diff|push|show|reindex|index [args...]

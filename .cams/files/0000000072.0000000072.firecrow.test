@@ -1,0 +1,65 @@
+#!/usr/bin/env python
+import os, sys
+from subprocess import Popen, PIPE
+
+# handle working directory
+def cmd(*args):
+  p = Popen(args, stdout=PIPE, stderr=PIPE)
+  p.wait()
+  return p
+
+print "[clean]"
+rm = cmd("rm", "-Rf", "testing/stage")
+print rm.returncode
+d = cmd("mkdir", "testing/stage")
+print d.returncode
+
+#echo "init"
+#cd testing/stage
+#../../cams init
+#echo $?
+#
+#echo "first commit"
+#cp -v ../fixtures/1/* . 
+#../../cams add x 
+#echo $?
+#
+#echo "diff for file added"
+#diff .cams/1/files/x x
+#echo $?
+#
+#../../cams commit "adding test file x"
+#echo $?
+#
+#../../cams list
+#echo $?
+#
+#echo "first commit"
+#cp -v ../fixtures/1/* . 
+#../../cams add x 
+#../../cams add y 
+#echo $?
+#
+#../../cams commit "updating x adding y"
+#echo $?
+#
+#../../cams list
+#echo $?
+
+# test diff
+# test commit messages
+# test index
+
+# all user facing commands
+# x init
+# - add
+# - reset
+# - commit
+# - list
+# - push
+# - checkout
+# - show
+# - reindex
+# - index
+# - cindex
+# - diff

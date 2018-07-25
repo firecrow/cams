@@ -1,0 +1,1 @@
+fix for subp not considering where stdout might not be defined

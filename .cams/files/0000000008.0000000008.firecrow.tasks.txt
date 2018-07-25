@@ -1,0 +1,4 @@
+- no longer have id field inside fields
+- commit with first arg before detecting stdin
+- log
+- diff

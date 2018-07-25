@@ -1,0 +1,99 @@
+> start replacing system calls
+  x pipe library function from crowtils
+  - ssh stuff in sync
+
+> use new diff library
+  - inline diffs to replace existing
+
+> diff -s target with +/- counts 
+  - status
+  - diff
+
+> verbose logging target (diff -v)
+  - recent time
+  - ansi color
+
+> branches
+
+> checkout
+
+------------------------- v1 ----------------------------
+
+
+x small issues
+  x diff stage compares against wrong commit
+  x difftool files are not in working directory or temp
+  x added files list
+  x status of checked in files since commit by tv_nsec of stat
+
+> retool sync to push again
+
+- branches
+  - how to trace the fork point?
+
+- cleanup
+  - reorganize functions
+  - implement spacing
+  - variable declaration at the top
+  - function names
+
+- retool crowtree's memory management paradigm
+
+- tag support
+
+x prior and hex based folders
+  x use prior with existing numerical ids
+    x create prior, as part of commit, and then populate it
+    x use stage directory instead of make_next
+  x move to using hex directories
+x commit metadata struct creation
+x centralized file migration
+  x create hex, and timestamp, in format 0000000000000001..0000000000000xxx format
+    x move files into central place
+x diff from cindex compare using tree functions
+x files stored in a central place
+x unadd
+
+- acces commits by hash
+- misc
+- multi user
+
+- checkout
+  - where the file was at that commit point
+  - checkout forward, make index file
+- negative index options for checkout and diff (0 for staged)
+- add datetime to commits
+- move to dynamic strings with vsnprintf
+  x write
+  - implement
+- remote checkout
+- camsweb
+- bug that pushes next_id
+- will a backwards diff range have problems, report as error condition
+- race condition where uncommited changes are counted as a push, even though push fails
+  - ockward user state handling in generatl
+- write replacement for system 
+- use difftool as an environment variable for diffing through vimdiff
+- centralize error reporting
+- sorted file order, for predicible diff output etc
+x sanitization and desanatization of files contained in folders
+x bug where speficiying a remote host causes and error with '('
+x general refactor, function order, switch statement in main for argv
+x move to a full file list model, this simplifies diff_range and diff_list
+  for checkout and diff significantly
+x refactor climber
+  x build index of files named after the files they 
+    represent with binary integer data representing 
+    every commit they are a part of, build this index
+    on commit and retrieve it for use by the climber
+  x use index for climber
+x diff
+  x file delta changes for history, by climbing down to the last changed file
+x remove next folder and use next_id as thes staging folder, then build a tags system and use next as a tag
+x no longer have id field inside fields
+x climber
+x commit with first arg before detecting stdin
+x log
+x issue of bad characters in the history
+^ tags (modify commit message to start with the tag)
+^ logs limited to n lines, maybe just read in rows variable, to limit or show all if in less

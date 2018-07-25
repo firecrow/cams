@@ -1,0 +1,6 @@
+- no longer have id field inside fields
+- commit with first arg before detecting stdin
+- refactor how name is used, to be centralized on the remote struct
+- log
+- diff
+- race condition where uncommited changes are counted as a push, even though push fails

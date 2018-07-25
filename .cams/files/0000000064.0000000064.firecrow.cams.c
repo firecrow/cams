@@ -1,0 +1,721 @@
+#include <stdlib.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <sys/time.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <string.h>
+#include <time.h>
+#include <dirent.h>
+#include <unistd.h>
+
+struct remote {
+  char *name;
+  char *user;
+  int  port;
+  char *host;
+  char *path;
+  bool is_home;
+  char *scp;
+  char *ssh;
+};
+
+struct ent {
+  char name[1024];
+  int tid;
+  int bid;
+  struct ent *next;
+};
+
+void make_next(int id);
+void parse_remote(struct remote *r, char *name);
+void remote_free(struct remote *r);
+char *ssh_cmd(struct remote *r, char *shell_cmd);
+void show(int id);
+struct ent *flist(int id);
+void push_index(int16_t id, char *fname);
+int next_id();
+char *substr(char *src, size_t s, size_t e);
+void commit(char *msg);
+struct ent *diff_list(int from, int to);
+void generate_cindex(int16_t id);
+
+char *substr(char *src, size_t s, size_t e){
+  size_t n = e-s;
+  char *str = malloc(sizeof(char)*(n+1));
+  if(!str);
+  memcpy(str, src+s, n);
+  str[n] = '\0';
+  return str;
+}
+
+int next_id(){
+  int l;
+  char b[1024];
+  FILE *idf;
+  idf = fopen(".cams/next", "r");
+  if(!idf){
+    fprintf(stderr, "unable to open id file\n");
+    exit(123);
+  }
+  l = fread(b, 1, 1023, idf);
+  b[l] = '\0';
+  return atoi(b);
+}
+
+void commit(char *msg){
+  int id = next_id();
+  char b[1024];
+  FILE *msgf;
+  snprintf(b, 1024, ".cams/%d/message", id);
+  msgf = fopen(b, "w+");
+  struct ent *files;
+  if(!msgf){
+    fprintf(stderr, "unable to open message file\n");
+    exit(123);
+  }
+  fprintf(msgf, "%s\n", msg);
+  files = flist(id);
+  while(files){
+    push_index(id, files->name); 
+    files = files->next;
+  }
+  make_next(id+1);
+}
+
+void checkout(int16_t from){
+  struct ent *f = diff_list(from, next_id());
+  char cmd[2048];
+  while(f){
+    printf("%s: %d\n", f->name, f->bid);
+    if(snprintf(cmd, 2048, "cp -v .cams/%d/files/%s %s", f->bid, f->name, f->name) > 2047){
+      fprintf(stderr, "unable to allocate checkout cmd too long\n");
+      exit(123);
+    }
+    system(cmd);
+    f = f->next;
+  }
+}
+
+int climb(int id, char *fname){
+  /* climb back to the last change of a file */
+  char path[1024];
+  while(--id > 0){
+    if(snprintf(path, 1024, ".cams/%d/files/%s", id, fname) > 1023 ){
+      fprintf(stderr, "file path in climb too long");
+      exit(123);
+    }
+    if(access(path, F_OK) != -1){
+      return id;
+    }
+  }
+  return -1;
+}
+
+int contained(int id, char *fname){
+  char path[1024];
+  if(snprintf(path, 1024, ".cams/%d/files/%s", id, fname) > 1023 ){
+    fprintf(stderr, "file path in commit too long");
+    exit(123);
+  }
+}
+
+void print_flist(FILE *out, struct ent *file){
+  while(file){
+    fwrite(file->name, 1, strlen(file->name), out);
+    file = file->next;
+    if(file){
+      fwrite(", ",1 ,2, out);
+    }
+  }
+  fwrite("\n",1 ,1, out);
+}
+
+
+void index_fnc(void (*fnc)(char *name)){
+  DIR *d;
+  struct dirent *dp;
+  char fmt[] = ".cams/index/%s";
+  char b[1024];
+  if((d = opendir(".cams/index")) == NULL){
+    fprintf(stderr, "unable to open dir: .cams/index");
+    exit(123);
+  }
+  while((dp = readdir(d)) != NULL){
+    if(snprintf(b, 1024, fmt, dp->d_name) > 1023){
+      fprintf(stderr, "unable to allocate name to remove");
+      exit(123);
+    }
+    if(!strncmp(".", dp->d_name, 1) || 
+       !strncmp("..", dp->d_name, 2))
+      continue;
+
+    fnc(b);
+  }
+}
+
+void clear_fnc(char *name){
+  remove(name);
+}
+
+void clear_index(){
+  index_fnc(clear_fnc);
+}
+
+void read_fnc(char *name){
+  FILE *file = fopen(name, "r");
+  int16_t x;
+  bool first = true;
+  if(!file){
+    fprintf(stdout, "unable to open file to print its index\n");
+    exit(123);
+  }
+  printf("%s\n", name);
+  while(fread(&x, 1, sizeof(int16_t), file) != 0){
+    if(!first){
+      printf(":");
+    }
+    first = false;
+    printf("%d", x);
+  }
+  printf("\n");
+}
+
+void read_index(){
+  index_fnc(read_fnc);
+}
+
+void push_index(int16_t id, char *fname){
+  char b[1024];
+  FILE *file;
+  if(snprintf(b, 1024, ".cams/index/%s", fname) > 1023){
+    fprintf(stderr, "unable to generate file name, name too long\n");
+    exit(123);
+  }
+  file = fopen(b, "a");
+  fseek(file, 0, SEEK_END);
+  if(!file){
+    fprintf(stderr, "unable to open file for writing index\n");
+    exit(123);
+  }
+  fwrite(&id, 1, sizeof(int16_t), file);
+  fclose(file);
+}
+
+void generate_cindex(int16_t id){
+  FILE *cindex;
+  FILE *prev_cindex;
+  int l;
+  char fname[1024];
+  char prev_fname[1024];
+  char prev_buff[1024];
+  int16_t prev_id;
+  struct ent *files = flist(id);
+  struct ent *filesp = files;
+  char *cont;
+  printf("%d\n", id);
+  if(snprintf(fname, 1024, ".cams/%d/cindex", id) > 1023){
+    fprintf(stderr, "error opening file too long");
+    exit(123);
+  }
+  if(!(cindex = fopen(fname, "w+"))){
+    fprintf(stderr, "unable to open cindex file for %d", id);
+  }
+  while(filesp){
+		fwrite(&id, sizeof(int16_t), 1, cindex);
+    fwrite(filesp->name, sizeof(char), strlen(filesp->name), cindex);
+    fwrite("\n", sizeof(char), 1, cindex);
+    filesp = filesp->next;
+  }
+  if(id > 1){
+  	if(snprintf(prev_fname, 1024, ".cams/%d/cindex", id-1) > 1023){
+  		fprintf(stderr, "error opening file too long");
+  		exit(123);
+  	}
+  	if(!(prev_cindex = fopen(prev_fname, "r"))){
+  		fprintf(stderr, "unable to open cindex file for %d", id);
+      exit(123);
+  	}
+    while(true){
+      if(!fread(&prev_id, 1, sizeof(int16_t), prev_cindex)){
+        break;
+      }
+      cont = fgets(prev_buff, 1023, prev_cindex);
+      l = strlen(prev_buff);
+      printf("l=%d\n", l);
+      if(prev_buff[l-1] == '\n')
+        prev_buff[l-1] = '\0';
+      filesp = files;
+      while(filesp){
+        printf("%d:%s<>%s\n", prev_id, prev_buff, filesp->name);
+        if(!strcmp(prev_buff, filesp->name))
+          break;
+        filesp = filesp->next;
+      }
+      if(filesp == NULL){
+        fwrite(&prev_id, sizeof(int16_t), 1, cindex);
+        fwrite(prev_buff, 1, strlen(prev_buff), cindex);
+        fwrite("\n", sizeof(char), 1, cindex);
+      }
+    }
+    fclose(prev_cindex);
+  }
+  fclose(cindex);
+}
+
+void rebuild_index(){
+  clear_index();
+  int16_t next = next_id();
+  int16_t id = 0;
+  struct ent *files;
+  while(++id <= next){
+    files = flist(id);
+    while(files){
+      push_index(id, files->name);
+      files = files->next;
+    }
+    generate_cindex(id);
+  }
+}
+
+struct ent *flist(int id){
+  char b[1024];
+  DIR *d;
+  struct dirent *dp;
+  bool f;
+  struct ent *head = NULL;
+  struct ent *prev = NULL;
+  struct ent *cur = NULL;
+  if(snprintf(b, 1024, ".cams/%d/files", id) > 1023){
+    fprintf(stderr, "file dir list too long");
+    exit(123);
+  }
+  if((d = opendir(b)) == NULL){
+    fprintf(stderr, "unable to open dir: %s", d);
+    exit(123);
+  }
+  while((dp = readdir(d)) != NULL){
+    if(!strncmp(".", dp->d_name, 1) || !strncmp("..", dp->d_name, 2))
+      continue;
+    if((cur = malloc(sizeof(struct ent))) == NULL){
+      fprintf(stderr, "cannot allocate new ent");
+    }
+    if(snprintf(cur->name, 1024, dp->d_name) > 1023){
+      fprintf(stderr, "unable to copy string to ent string too long");
+    }
+    cur->next = NULL;
+    cur->tid = 0;
+    cur->bid = 0;
+    if(!prev){
+      head = prev = cur;
+    }else{
+      prev->next = cur;
+      prev = cur;
+    }
+  }
+  return head;
+}
+
+void show_flist(int id){
+  struct ent *next = flist(id); 
+  struct ent *prev;
+  bool f = true;
+  while(next){
+    if(!f)
+      printf(", ");
+    f = false;
+    printf("%s", next->name);
+    prev = next;
+    next = prev->next;
+    free(prev);
+  }
+}
+
+int16_t find_prior(int16_t id, char *fname){
+  char b[1024];
+  FILE *file;
+  int16_t x = 0;
+  int16_t p = 0;
+  if(snprintf(b, 1024, ".cams/index/%s", fname) > 1023){
+    fprintf(stderr, "unable to allocate name for prior, too long\n");
+    exit(123);
+  }
+  if(!(file = fopen(b, "r"))){
+    fprintf(stderr, "unable to open index file\n");
+    exit(123);
+  }
+  while(fread(&x, 1, sizeof(int16_t), file) != 0){
+    if(x >= id){
+      return p;
+    }
+    p = x;
+  }
+  return p;
+}
+
+struct ent *range_list(int from, int to){
+  struct ent *all = NULL;
+  struct ent *allp = NULL;
+  struct ent *fl = NULL;
+  struct ent *cur = NULL;
+  int open = 0;
+  bool below = false;
+  bool fisnew = true;
+  while(to > from){
+    fl = flist(to);
+    while(fl){
+      allp = all;
+      while(allp){
+        if(!strcmp(allp->name, fl->name)){
+          break;
+        }
+        allp = allp->next;
+      }
+      /* null means the linked list concluded to the end */
+      if(allp == NULL){
+        cur = fl;
+        fl = fl->next;
+        cur->tid = to;
+        cur->next = all;
+        all = cur;
+      }else{
+        fl = fl->next;
+      }
+    }
+    to--;
+  }
+  return all;
+}
+
+struct ent *diff_list(int from, int to){
+  struct ent *files = range_list(from, to);
+  struct ent *p = files;
+  while(p){
+    /* plus one because we are seeking the prior commit */
+    p->bid = find_prior(from+1, p->name);
+    p = p->next;
+  }
+  return files;
+}
+
+void diff(int from, int to){
+  int status;
+  char fname[256];
+  char cmd[1024];
+  struct ent *f = diff_list(from, to);
+  while(f){ 
+    if(f->bid > 0){
+      if(snprintf(fname, 256, ".cams/%d/files/%s", f->bid, f->name) > 255){
+        fprintf(stderr, "diff fname too long\n");
+        exit(123);
+      };
+    }else{
+      if(snprintf(fname, 256, "/dev/null") > 255){
+        fprintf(stderr, "diff fname too long\n");
+        exit(123);
+      };
+    }
+    if(snprintf(cmd, 1024, "diff %s .cams/%d/files/%s", fname, f->tid, f->name) > 1023){
+      fprintf(stderr, "diff cmd too long\n");
+      exit(123);
+    };
+    printf("[%s] %d..%d\n", f->name, f->bid, f->tid);
+    fflush(stdout);
+    system(cmd);
+    f = f->next;
+  }
+}
+
+void make_next(int id){
+  char b[32];
+  if(id >= 1024){
+    fprintf(stderr, "id too large, recompile with larger buffer for id in commit() function\n");
+    exit(123);
+  }
+  snprintf(b, 32, "mkdir .cams/%d", id);
+  system(b);
+  snprintf(b, 32, "mkdir .cams/%d/files", id);
+  system(b);
+  FILE *idf = fopen(".cams/next", "w+");
+  if(!idf){
+    fprintf(stderr, "unable to open id file");
+    exit(123);
+  }
+  fprintf(idf, "%d", id);
+  fclose(idf);
+}
+
+void init(){
+  system("mkdir .cams");  
+  system("mkdir .cams/index");  
+  make_next(1);
+}
+
+char *sanatize(char *fname){
+  char c;
+  int l = strlen(fname);
+  int i = 0;
+  char *s = (char *) malloc(sizeof(char)*(l+1));
+  if(!s){
+    fprintf(stderr, "error allocating sanatized string");
+    exit(123);
+  }
+  while((c=fname[i]) != '\0'){
+    s[i++] = (c == '/') ? '+' : c;
+  }
+  return s;
+}
+
+void add(int argc, char **list){
+  int i;
+  int id = next_id();
+  char *fname;
+  char *sfname;
+  char cmd[1024];
+  for(i = 0; i<argc; i++){
+    fname = list[i];
+    sfname = sanatize(fname);
+    if(fname[0] == '.' && fname[1] == '.'){
+      fprintf(stderr, "error cannot copy files outside root directory: %s\n", fname);
+      exit(123);
+    }
+    snprintf(cmd, 1024, "cp -v %s .cams/%d/files/%s", fname, id, sfname);
+    system(cmd);
+  }
+}
+
+void parse_remote(struct remote *r, char *name){
+  /*open remotes file*/
+  char b[1024];
+  char *cur_remote;
+  char *value;
+  size_t l;
+  int field = 0;
+  int s_pos = 0;
+  int e_pos = 0;
+  FILE * rfile = fopen(".cams/remotes", "r");
+  if(!rfile){
+    /* bad things have happened */
+  }
+  while(l = fgets(b, 1023, rfile) != 0){
+    if(b[0] == '#')
+      continue;
+    /* validate that the line is the expected name
+     * if name is specified
+     * if name is not specified, use the first line found
+     */
+    if(name != NULL && !strncmp(name, b, strlen(name)))
+      continue;
+    while(field < 5){
+      while(
+        b[e_pos] != ' ' 
+        && b[e_pos] != '\0' 
+        && b[e_pos] != '\n'
+      ){ e_pos++; };
+      value = substr(b, s_pos, e_pos);
+      switch(field){
+        case 0:
+          r->name = value;
+          break;
+        case 1:
+           r->user = value;
+           break;
+        case 2:
+          r->host = value;
+          break;
+        case 3:
+          r->port = atoi(value);
+          break;
+        case 4:
+          r->path = value;
+          break;
+      }
+      s_pos = ++e_pos;
+      field++;
+    }
+    if(field < 5){
+      fprintf(stderr, "Oops misconfigured remote: %s", b);
+      exit(123);
+    }else{
+      break;
+    }
+  }
+}
+
+void scp_commit(struct remote *r, int id){
+  char cmd[1024];
+  if(snprintf(cmd, 1024, "scp -r -P %d .cams/%d %s@%s:%s", r->port, id, r->user, r->host, r->path) > 1023){
+    fprintf(stderr, "error formulating scp comand arguments too long");
+    exit(123);
+  }
+  if(system(cmd)){
+    fprintf(stderr, "error with scp\n");
+    exit(123);
+  }
+}
+
+char *ssh_cmd(struct remote *r, char *shell_cmd){
+  char c[] = "c";
+  size_t l = snprintf(c, 1, "ssh -p %d %s@%s %s", r->port, r->user, r->host, shell_cmd);
+  char *cmd = malloc(sizeof(char)*(l+1));
+  if(!malloc);
+  snprintf(cmd, l+1, "ssh -p %d %s@%s %s", r->port, r->user, r->host, shell_cmd);
+  return cmd;
+}
+
+void init_remote(char *name){
+  struct remote r;
+  parse_remote(&r, name);
+  /* ssh to see if the directory exists */
+  /* create it if it doesn't*/
+}
+
+int latest_remote(struct remote *r){
+  char cmd[1024];
+  char b[1024];
+  FILE *out;
+  int lt;
+  if(snprintf(cmd, 1024, "ls %s/ | sort -nr | head -n 1", r->path) > 1023){
+    fprintf(stderr, "cmd too long\n");
+    exit(123);
+  }
+  out = popen(ssh_cmd(r, cmd), "r");
+  fgets(b, 1024, out);
+  lt = atoi(b);
+  return lt;
+}
+
+void push(char *name){
+  struct remote r;
+  int exists;
+  int nid;
+  int i;
+  char cmd[1024];
+  int rlatest;
+  parse_remote(&r, name);
+  if(snprintf(cmd, 1024, "ls %s 1>/dev/null", r.path) > 1023){
+    fprintf(stderr, "path to long\n");
+    exit(123);
+  }
+  if(system(ssh_cmd(&r, cmd))){
+    fprintf(stderr, "directory not found: %s\n", r.path);
+  }
+  rlatest = latest_remote(&r);
+  nid = next_id();
+  if(nid < rlatest){
+    printf("%s is ahead of local at %d\n", name, rlatest);
+  }else if(nid == rlatest){
+    printf("%s is up to date at %d\n", name, nid);
+  }else{
+    i = rlatest;
+    while(++i < nid){
+      scp_commit(&r, i);
+    }
+    printf("pushed %d..%d to %s\n", rlatest+1, nid-1, name);
+  }
+}
+
+void show(int id){
+  int l;
+  char b[1024];
+  FILE *msg;
+  if(!id){
+   id = next_id()-1;
+  }
+  if(snprintf(b, 1024, ".cams/%d/message", id) > 1023){
+    fprintf(stderr, "error show path too long");
+    exit(123);
+  }
+  if(!(msg = fopen(b, "r"))){
+    fprintf(stderr, "error opening file");
+    exit(123);
+  }
+  printf("%d: ", id);
+  while((l = fread(b, 1, 1024, msg)) != 0){
+    if(b[l-1] == '\n') l--;
+    fwrite(b, 1, l, stdout);
+  }
+  printf(" (");
+  show_flist(id);
+  printf(")\n");
+}
+
+void list(int start, int qty){
+  int id;
+  int count = 0;
+  if(start == 0){
+    id = next_id()-1;
+  }else{
+    id = start;
+  }
+  while(id > 0){
+    show(id--);
+    if(qty && ++count == qty){
+      break;
+    };
+  }
+}
+
+void reset(){
+  printf("Resetting files\n");
+  system("rm -v .cams/next/files/*");
+}
+
+void usage(char *command){
+  if(!strncmp("./", command, 2))
+    command +=2;
+
+  printf("%s\n    help|init|commit|list|checkout|diff|push|show|reindex|index [args...]\n", command);
+}
+
+int main(int argc, char **argv){
+  int16_t to;
+  int16_t from;
+  if(argc < 2){
+    usage(argv[0]);
+    return 1;
+  }else if(!strncmp("help", argv[1], 1024)){
+    usage(argv[0]);
+  }else if(!strncmp("init", argv[1], 1024)){
+    init();
+  }else if(!strncmp("add", argv[1], 1024)){
+    add(argc-2, argv+2);
+  }else if(!strncmp("reset", argv[1], 1024)){
+    reset();
+  }else if(!strncmp("commit", argv[1], 1024)){
+    commit((argc == 3) ? argv[2] : NULL);
+  }else if(!strncmp("list", argv[1],  1024)){
+    list(
+      (argc >= 3) ? atoi(argv[2]) : 0,
+      (argc == 4) ? atoi(argv[3]) : 0
+    ); 
+  }else if(!strncmp("push", argv[1],  1024)){
+    push((argc == 3) ? argv[2] : NULL); 
+  }else if(!strncmp("checkout", argv[1],  1024)){
+    checkout(atoi(argv[2]));
+  }else if(!strncmp("show", argv[1],  1024)){
+    show(0);
+  }else if(!strncmp("reindex", argv[1],  1024)){
+    rebuild_index();
+  }else if(!strncmp("index", argv[1],  1024)){
+    read_index();
+  }else if(!strncmp("diff", argv[1],  1024)){
+    if(argc == 2){
+      to = next_id();
+      from = to-1;
+    }else if(argc == 4){
+      from = atoi(argv[2]);
+      to = atoi(argv[3]);
+    }else{
+      printf("wrong number of arguments to diff expected 0 or 2\n   cams diff [from_id to_id]\n");
+      exit(1);
+    } 
+    diff(from, to);
+  }else{
+    fprintf(stderr, "command not found\n");
+    return 1;
+  }
+  return 0;
+}
