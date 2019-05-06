@@ -14,8 +14,8 @@
 #include "../crowarg/crowarg.c"
 #include "../crray/crray.c"
 
-int usage(char *arg0){
-  printf("%s\n    help|init|add|commit|list|diff|push [args...]\n", arg0);
+int usage(){
+  printf("cams\n    help|init|add|commit|list|diff|push [args...]\n");
   return 1;
 }
 
@@ -116,7 +116,6 @@ struct ct_tree *opkv;
 struct ct_tree *ophandlers;
 struct crray *opitems;
 void arg_item_func(int idx, char *item){
-  printf("item:%s at %d\n", item, idx);
   if(idx == 1){
     op = item;
   }else{
@@ -132,61 +131,37 @@ void arg_word_func(int idx, char *word, char *value){
 
 int main(int argc, char **argv){
   if(argc < 2){
-    usage(argv[0]);
+    usage();
     return 1;
   }
 
   opitems = crray_str_init();
   ophandlers = ct_tree_alpha_init();
   struct ct_leaf _ophandlers[] = {
-    {"help", NULL, NULL},
-    {"init", NULL, NULL},
-    {"add", NULL, NULL},
-    {"unadd", NULL, NULL},
-    {"rm", NULL, NULL},
-    {"commit", NULL, NULL},
-    {"checkout", NULL, NULL},
-    {"list", NULL, NULL},
-    {"status", NULL, NULL},
-    {"diff", NULL, NULL},
-    {"push", NULL, NULL},
-    {"show", NULL, NULL},
-    {"debug", NULL, NULL},
-  };
-  ct_tree_add_bulk(ophandlers, _ophandlers);
-
-  crowarg_parse(argc, argv, NULL, arg_flag_func, arg_word_func, arg_item_func);
-  printf("op is:%s\n", op);
-
-  /*
-  int ret;
-  int count;
-	struct intls intls;
-
-
-  struct opt_cmd cmds[] = {
-    {"help",  usage},
-    {"init",  init},
-    {"add",  add},
-    {"unadd",  unadd},
-    {"rm",  rm},
-    {"commit",  commit},
-    {"checkout",  checkout},
-    {"list",  list},
-    {"status",  status},
-    {"diff",  diff},
-    {"push",  push},
-    {"show",  show_commit},
-    {"debug",  debug_fnc},
+    {"help", 0, NULL},
+    {"init", 0, NULL},
+    {"add", 0, NULL},
+    {"unadd", 0, NULL},
+    {"rm", 0, NULL},
+    {"commit", 0, NULL},
+    {"checkout", 0, NULL},
+    {"list", 0, NULL},
+    {"status", 0, NULL},
+    {"diff", 0, NULL},
+    {"push", 0, NULL},
+    {"show", 0, NULL},
+    {"debug", 0, NULL},
     NULL
   };
-
-	init_intls(&intls);
-  ret = run_cmd(argc, argv, &intls, cmds);
-  if(ret != -1){
-    return ret;
+  ct_tree_add_bulk(ophandlers, _ophandlers);
+  crowarg_parse(argc, argv, NULL, arg_flag_func, arg_word_func, arg_item_func);
+  
+  struct ct_leaf opt_leaf;
+  opt_leaf.key = op;
+  if(ct_tree_get(ophandlers, &opt_leaf) == CT_NOT_FOUND){
+    printf("op not found: %s\n", op);
+    usage();
   }
-  */
-  fprintf(stderr, "command not found\n");
-  return 1;
+
+  return (0);
 }
