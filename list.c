@@ -1,4 +1,4 @@
-int list(int argc, char **argv){
+int list(){
   char *cid;
   char *filestr;
   char *cfilestr;
@@ -35,6 +35,7 @@ int list(int argc, char **argv){
     */
   }
 
+  printf("qty:%d\n", qty);
   /*
   if(opts->argc > 2){
     cid = lookup_or_die(opts->argv[1]);

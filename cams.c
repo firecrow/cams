@@ -148,7 +148,7 @@ int main(int argc, char **argv){
     {"rm", 0, NULL},
     {"commit", 0, NULL},
     {"checkout", 0, NULL},
-    {"list", 0, NULL},
+    {"list", 0, list},
     {"status", 0, NULL},
     {"diff", 0, NULL},
     {"push", 0, NULL},
@@ -173,7 +173,11 @@ int main(int argc, char **argv){
   if(ct_tree_get(ophandlers, &opt_leaf) == CT_NOT_FOUND){
     printf("op not found: %s\n", op);
     usage();
+    return (1);
   }
+
+  void (*handler)() = opt_leaf.data; 
+  handler();
 
   return (0);
 }
