@@ -2,17 +2,19 @@
 #include "cams.h"
 #include "utils.c"
 #include "sync.c"
-#include "list.c"
 */
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/ioctl.h>
 #include "../crowtils/crowtils.c"
 #include "../crowtree/tree.c"
 #include "../crowarg/crowarg.c"
 #include "../crray/crray.c"
+#include "commit.c"
+#include "list.c"
 
 int usage(){
   printf("cams\n    help|init|add|commit|list|diff|push [args...]\n");
@@ -114,6 +116,7 @@ int run_cmd(int argc, char **argv, struct intls *intls, struct opt_cmd cmds[]){
 char *op;
 struct ct_tree *opkv;
 struct ct_tree *ophandlers;
+struct ct_tree *opflookup;
 struct crray *opitems;
 void arg_item_func(int idx, char *item){
   if(idx == 1){
@@ -154,6 +157,15 @@ int main(int argc, char **argv){
     NULL
   };
   ct_tree_add_bulk(ophandlers, _ophandlers);
+
+  opflookup = ct_tree_idx_init();
+  struct ct_leaf _oflookup[] = {
+    {NULL, 'f', "force"},
+    {NULL, 'n', "number"},
+    NULL
+  };
+  ct_tree_add_bulk(opflookup, _oflookup);
+
   crowarg_parse(argc, argv, NULL, arg_flag_func, arg_word_func, arg_item_func);
   
   struct ct_leaf opt_leaf;
