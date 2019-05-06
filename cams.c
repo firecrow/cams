@@ -1,16 +1,21 @@
+/*
 #include "cams.h"
+#include "utils.c"
+#include "sync.c"
+#include "list.c"
+*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include "../crowarg/crowarg.c"
 
-int usage(int argc, char **argv, struct intls *intls){
-  char *command = argv[0];
-  int l = strlen(command);
-  while(*command == '.' || *command == '/'){
-    command++;
-  }
-
-  printf("%s\n    help|init|add|commit|list|diff|push [args...]\n", command);
+int usage(char *arg0){
+  printf("%s\n    help|init|add|commit|list|diff|push [args...]\n", arg0);
   return 1;
 }
 
+/*
 int init(int argc, char **argv, struct intls *intls){
   struct ct_subp subp;
   subp.cmd = "mkdir";
@@ -35,17 +40,23 @@ int init(int argc, char **argv, struct intls *intls){
   fclose(name);
   return 0;
 }
+*/
 
+/*
 void out(int idx, char *str, void *data){
   trimnl(str);
   fprintf(stderr, "=%d: '%s'\n", idx, str);  
 }
+*/
 
+/*
 void done(struct ct_subp *subp, void *data){
   fprintf(stderr, "done\n");
   fprintf(stderr, "%d\n", subp->ret);
 }
+*/
 
+/*
 int debug_fnc(int argc, char **argv, struct intls *intls){
   struct ct_subp subp;
   subp.cmd = "./pipetest.py";
@@ -58,7 +69,9 @@ int debug_fnc(int argc, char **argv, struct intls *intls){
   subp_emitter(&subp, NULL, out, done);
   return 0;
 }
+*/
 
+/*
 int checkout(int argc, char **argv, struct intls *intls){
   struct opts *opts = getopts(argc, argv);
   struct opt_value *ruri = find_opt(opts, 'r', "remote");
@@ -67,18 +80,20 @@ int checkout(int argc, char **argv, struct intls *intls){
     parse_remote(&r, ruri->value);
     char *rlatest = latest_remote(&r);
     mkdir(rlatest, 0775);
-    /* get the latest cindex */
+    /* get the latest cindex * /
     scp_down(&r, dk_fmtmem("%s/%s/cindex", r.path, rlatest), rlatest, NULL);
-    /* make a tar of the files */
-    /* pull it down, and unpack it */
-    /* rename the artifacts */
+    /* make a tar of the files * /
+    /* pull it down, and unpack it * /
+    /* rename the artifacts * /
     return 0;
   }else{
     fprintf(stderr, "Non remote checkin not yet supported.\n");
     exit(123);
   }
 }
+*/
 
+/*
 int run_cmd(int argc, char **argv, struct intls *intls, struct opt_cmd cmds[]){
   int i = 0;
   while(cmds[i].name != NULL){
@@ -90,21 +105,22 @@ int run_cmd(int argc, char **argv, struct intls *intls, struct opt_cmd cmds[]){
   }
   return -1;
 }
+*/
 
-#ifdef UNITTEST
+
+
+
 int main(int argc, char **argv){
-	fprintf(stdout, "poo\n");
-}
-#else
-int main(int argc, char **argv){
+  if(argc < 2){
+    usage(argv[0]);
+    return 1;
+  }
+
+  /*
   int ret;
   int count;
 	struct intls intls;
 
-  if(argc < 2){
-    usage(argc, argv, &intls);
-    return 1;
-  }
 
   struct opt_cmd cmds[] = {
     {"help",  usage},
@@ -128,7 +144,7 @@ int main(int argc, char **argv){
   if(ret != -1){
     return ret;
   }
+  */
   fprintf(stderr, "command not found\n");
   return 1;
 }
-#endif

@@ -1,5 +1,3 @@
-#include "cams.h"
-
 static struct ct_tree *find_range(char *cid, char *needle);
 
 void show_remote(struct remote *r){
@@ -28,8 +26,8 @@ int push(int argc, char **argv, struct intls *intls){
 
   /* gathering files */
   struct ct_tree *files = ct_tree_alpha_init();
-  struct ct_key_data kv = {NULL, NULL};
-  struct ct_key_data rkv = {NULL, NULL};
+  struct ct_leaf kv = {NULL, NULL};
+  struct ct_leaf rkv = {NULL, NULL};
   struct ct_tree *range = find_range(cid, rlatest); 
   char *current;
   while(!ct_tree_next(range, &kv)){
@@ -240,8 +238,8 @@ void scp_down(struct remote *r, char *from, char *to,
 
 void gather_files_for_push(struct ct_tree *tree, char *cid){
   struct ct_tree *files = cfiles(cid);
-  struct ct_key_data kv = {NULL, NULL};
-  struct ct_key_data kv_dest = {NULL, NULL};
+  struct ct_leaf kv = {NULL, NULL};
+  struct ct_leaf kv_dest = {NULL, NULL};
   struct ent *cur;
   while(ct_tree_next(files, &kv) != CT_NOT_FOUND){
     cur = (struct ent *)kv.data;  

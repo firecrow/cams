@@ -1,5 +1,3 @@
-#include "cams.h"
-
 char *dupstr(char *str){
   size_t len = strlen(str);
   char *dest = dk_malloc(len+1);
@@ -71,7 +69,7 @@ int ct_split(char *str, char c, int limit, char ***ret){
   char *ptr = str;
   char *lptr = str;
   struct ct_tree *tree = ct_tree_int_init();
-  struct ct_key_data kv = {NULL, NULL};
+  struct ct_leaf kv = {NULL, NULL, NULL};
   char **_ret;
   while(true){
     if(*ptr == '\0' || (*ptr == c && (!limit || (count < limit)))){

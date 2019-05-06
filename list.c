@@ -1,5 +1,3 @@
-#include "cams.h"
-
 int list(int argc, char **argv, struct intls *intls){
   char *cid;
   char *filestr;
@@ -153,7 +151,7 @@ gen_stbuckets(char *cid)
   struct ct_tree *cindex = cindex_to_tree(cid);
   struct ct_tree *removed = ct_tree_alpha_init();
   struct ct_tree *modified = ct_tree_alpha_init();
-  struct ct_key_data kv = {NULL, NULL};
+  struct ct_leaf kv = {NULL, NULL};
 
   struct stbuckets *buckets = dk_malloc(sizeof(struct stbuckets));
 
@@ -191,7 +189,7 @@ gen_stbuckets(char *cid)
 int status(int argc, char **argv, struct intls *intls){
   char *cid = get_current();
   struct stbuckets *stb = gen_stbuckets(cid);
-  struct ct_key_data kv = {NULL, NULL};
+  struct ct_leaf kv = {NULL, NULL};
 
 
   if(stb->staged->len){

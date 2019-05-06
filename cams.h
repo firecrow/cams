@@ -7,7 +7,7 @@
 #include <time.h>
 #include <dirent.h>
 #include <unistd.h>
-#include <crowtils.h>
+#include "../crowtils/crowtils.c"
 #include <time.h>
 #include <sys/timespec.h>
 #include <sys/time.h>
@@ -17,9 +17,8 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <ftw.h>
-#include <crowtree/tree.h>
-#include <crycomp/crycomp.h>
-#include "crowopt/opt.h"
+#include "../crowtree/tree.c"
+#include "../crowopt/opt.h"
 
 struct remote {
   char *name;
@@ -106,11 +105,6 @@ struct ct_subp {
   int outs[2];
   int errs[2];
   int flags;
-};
-struct ct_strbuff {
-  char *str;
-  size_t len;
-  size_t size;
 };
 char *dupstr(char *str);
 char *dupnstr(char *str, int len);
