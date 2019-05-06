@@ -6,9 +6,11 @@
 */
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <errno.h>
-/*#include "../crowtree/tree.c"*/
+#include "../crowtils/crowtils.c"
+#include "../crowtree/tree.c"
 #include "../crowarg/crowarg.c"
 #include "../crray/crray.c"
 
@@ -110,11 +112,22 @@ int run_cmd(int argc, char **argv, struct intls *intls, struct opt_cmd cmds[]){
 */
 
 char *op;
+struct ct_tree *opkv;
+struct ct_tree *ophandlers;
+struct crray *opitems;
 void arg_item_func(int idx, char *item){
   printf("item:%s at %d\n", item, idx);
   if(idx == 1){
     op = item;
+  }else{
+    /*opitems->add(opitems, item);*/
   }
+}
+
+void arg_flag_func(int idx, char flag){
+}
+
+void arg_word_func(int idx, char *word, char *value){
 }
 
 int main(int argc, char **argv){
@@ -123,7 +136,26 @@ int main(int argc, char **argv){
     return 1;
   }
 
-  crowarg_parse(argc, argv, NULL, NULL, NULL, arg_item_func);
+  opitems = crray_str_init();
+  ophandlers = ct_tree_alpha_init();
+  struct ct_leaf _ophandlers[] = {
+    {"help", NULL, NULL},
+    {"init", NULL, NULL},
+    {"add", NULL, NULL},
+    {"unadd", NULL, NULL},
+    {"rm", NULL, NULL},
+    {"commit", NULL, NULL},
+    {"checkout", NULL, NULL},
+    {"list", NULL, NULL},
+    {"status", NULL, NULL},
+    {"diff", NULL, NULL},
+    {"push", NULL, NULL},
+    {"show", NULL, NULL},
+    {"debug", NULL, NULL},
+  };
+  ct_tree_add_bulk(ophandlers, _ophandlers);
+
+  crowarg_parse(argc, argv, NULL, arg_flag_func, arg_word_func, arg_item_func);
   printf("op is:%s\n", op);
 
   /*
