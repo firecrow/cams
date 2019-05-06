@@ -8,7 +8,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+/*#include "../crowtree/tree.c"*/
 #include "../crowarg/crowarg.c"
+#include "../crray/crray.c"
 
 int usage(char *arg0){
   printf("%s\n    help|init|add|commit|list|diff|push [args...]\n", arg0);
@@ -107,14 +109,22 @@ int run_cmd(int argc, char **argv, struct intls *intls, struct opt_cmd cmds[]){
 }
 */
 
-
-
+char *op;
+void arg_item_func(int idx, char *item){
+  printf("item:%s at %d\n", item, idx);
+  if(idx == 1){
+    op = item;
+  }
+}
 
 int main(int argc, char **argv){
   if(argc < 2){
     usage(argv[0]);
     return 1;
   }
+
+  crowarg_parse(argc, argv, NULL, NULL, NULL, arg_item_func);
+  printf("op is:%s\n", op);
 
   /*
   int ret;
