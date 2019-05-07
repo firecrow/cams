@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
+#include <time.h>
 #include "../crowtils/crowtils.c"
 #include "../crowtree/tree.c"
 #include "../crowarg/crowarg.c"

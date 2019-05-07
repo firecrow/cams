@@ -46,9 +46,14 @@ int list(){
   cid = get_current();
   while(cid){
     struct commit *com = commit_init(cid);
+    struct tm *_t = localtime(&(com->time.tv_sec));
+    char tbuff[256];
+    strftime(tbuff, 256, "%a %Y-%m-%d %H:%M", _t); 
+
     char *time = ctime(&(com->time.tv_sec));
     trimnl(time);
-    printf("cid:%s %d/%d %s %s: %s\n", cid, com->time.tv_sec, com->time.tv_nsec, time, com->name, com->message);
+
+    printf("cid:%s %d/%d %s %s: %s\n", cid, com->time.tv_sec, com->time.tv_nsec, tbuff, com->name, com->message);
     /*
     char *idxfname = dk_fmtmem(".cams/%s/cindex", cid);
     FILE *idxf = dk_open(idxfname, "r");
