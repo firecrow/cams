@@ -9,10 +9,12 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/ioctl.h>
+#include <fcntl.h>
 #include "../crowtils/crowtils.c"
 #include "../crowtree/tree.c"
 #include "../crowarg/crowarg.c"
 #include "../crray/crray.c"
+#include "utils.c"
 #include "commit.c"
 #include "list.c"
 

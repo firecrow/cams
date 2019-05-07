@@ -10,6 +10,32 @@ char *get_current(){
   return ct_fread(".cams/current");
 }
 
+void parse_cid(char *_cid, struct commit *com){
+  char *cid = dupstr(_cid);
+  int i = 0;
+  char *p = cid;
+  char *pp = cid;
+  int in_nsec = 1;
+
+  
+  while(*p != '\0'){
+    if(*p == '.'){
+      if(in_nsec){
+        *p = '\0';
+        com->time.tv_sec = atoi(pp);
+        pp = p+1;
+        in_nsec = 0;
+      }else{
+        *p = '\0';
+        com->time.tv_nsec = atoi(pp);
+        pp = p+1;
+        com->name = dk_fmtmem("%s", pp);
+      }
+    }
+    p++;
+  }
+}
+
 struct commit *commit_init(char *cid){
   struct commit *com = dk_malloc(sizeof(struct commit));
   bzero(com, sizeof(struct commit));
@@ -17,10 +43,7 @@ struct commit *commit_init(char *cid){
   char *path;
 
   com->cid = cid;
-  /*
-  parse_cid(cid, &com->time, &com->name);
-  */
-  com->name = "blank";
+  parse_cid(cid, com);
 
   path = dk_fmtmem("%s/%s", basedir, "parent");
   if(!ct_fexists(path)){

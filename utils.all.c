@@ -1,24 +1,3 @@
-struct ct_subp {
-  char *cmd;
-  char **argv;
-  FILE *stdin;
-  FILE *stdout;
-  FILE *stderr;
-  int pid;
-  int ret;
-  int ins[2];
-  int outs[2];
-  int errs[2];
-  int flags;
-};
-
-enum CT_SUBP_FLAGS {
-  CT_USE_STDIN = 1,
-  CT_USE_STDOUT = 2,
-  CT_USE_STDERR = 4,
-  CT_SUBP_ASYNC = 8
-};
-
 char *dupstr(char *str){
   size_t len = strlen(str);
   char *dest = dk_malloc(len+1);
@@ -80,6 +59,52 @@ int localize_fname(char *fname){
   return count;
 }
 
+int ct_split(char *str, char c, int limit, char ***ret){
+  int count = 0;
+  int len;
+  int i;
+  char *current = str;
+  int curlen = 0;
+  char *new;
+  char *ptr = str;
+  char *lptr = str;
+  struct ct_tree *tree = ct_tree_int_init();
+  struct ct_leaf kv = {NULL, NULL, NULL};
+  char **_ret;
+  while(true){
+    if(*ptr == '\0' || (*ptr == c && (!limit || (count < limit)))){
+      new = dk_malloc(curlen+1);
+      memcpy(new, lptr, curlen);
+      new[curlen] = '\0';
+      kv.key = (void *) (long) count+1;/* this has to be base 1 because of NULL checks */
+      kv.data = new;
+      ct_tree_set(tree, &kv);
+      count++;
+      if(*ptr == c){
+        lptr += curlen+1;
+        ptr = lptr;
+        curlen = 0;
+      }else{
+        break;
+      }
+    }else{
+      curlen++;
+      ptr++;
+    }
+  }
+  len = tree->len;
+  _ret = dk_malloc(sizeof(char *)*(len+1)); 
+  _ret[len] = NULL;
+  i = 0;
+  kv.key = NULL;
+  while(!ct_tree_next(tree, &kv)){
+    _ret[i++] = kv.data;
+  }
+  *ret = _ret;
+  tree->free = NULL;
+  ct_tree_free(tree);
+  return len;
+}
 
 void trimnl(char *str){
   int target = strlen(str)-1;
@@ -193,3 +218,6 @@ int ct_strbuff_shift(struct ct_strbuff *buff, size_t len, char **dest){
   buff->len = remaining_len;
   return 0;
 }
+
+
+/*hi*/
