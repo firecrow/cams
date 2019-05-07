@@ -22,12 +22,12 @@ void parse_cid(char *_cid, struct commit *com){
     if(*p == '.'){
       if(in_nsec){
         *p = '\0';
-        com->time.tv_sec = atoi(pp);
+        com->time.tv_nsec = atoi(pp);
         pp = p+1;
         in_nsec = 0;
       }else{
         *p = '\0';
-        com->time.tv_nsec = atoi(pp);
+        com->time.tv_sec = atoi(pp);
         pp = p+1;
         com->name = dk_fmtmem("%s", pp);
       }
