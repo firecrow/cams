@@ -16,6 +16,8 @@
 #include "../crowarg/crowarg.c"
 #include "../crray/crray.c"
 #include "utils.c"
+char *san_fname(char *path, bool san);
+#include "ent.c"
 #include "commit.c"
 #include "list.c"
 

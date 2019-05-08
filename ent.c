@@ -1,4 +1,19 @@
-#include "cams.h"
+struct ent {
+  char *path;
+  char *spath;
+  char *cid;
+  char *prior;
+  struct timespec time;
+};
+
+char *ent_tostr(struct ent *cur);
+void ct_free_ent_node(void *key, void *data);
+struct ct_tree *ent_tree_init();
+char *gen_path(struct ent* cur, bool current);
+struct ent *ent_init(char *path, char *spath);
+void ent_free(struct ent *cur);
+struct ent *ent_from_line(char *line);
+
 
 char *ent_tostr(struct ent *cur){
   return dk_fmtmem("<ent path:%s, spath:%s, cid:%s, prior:%s>", cur->path, cur->spath, cur->cid, cur->prior);
@@ -10,7 +25,7 @@ void ct_free_ent_node(void *key, void *data){
 }
 
 struct ct_tree *ent_tree_init(){
-  return ct_tree_init(ct_cmp_alpha, ct_free_ent_node);
+  return ct_tree_init(ct_cmp_alpha, ct_free_ent_node, NULL);
 }
 
 char *gen_path(struct ent* cur, bool current){
@@ -54,13 +69,16 @@ void ent_free(struct ent *cur){
 
 struct ent *ent_from_line(char *line){
   char **pieces;
-  int piece_count =  ct_split(line, ':', 1, &pieces); 
-  if(piece_count != 2){
-    fprintf(stderr, "wrong number of pieces returned by split in cindex_to_tree: %d\n", piece_count);
+  struct crray *arr = crray_str_init();
+  ct_split(line, ':', arr); 
+  if(arr->length != 2){
+    fprintf(stderr, "wrong number of pieces returned by split in cindex_to_tree: %d\n", arr->length);
     exit(123);
   }
-  char *cid = pieces[0];
-  char *fname = pieces[1];
+  char *cid;
+  arr->get(arr, 0, &cid);
+  char *fname;
+  arr->get(arr, 1, &fname);
   trimnl(fname);
 
   struct ent *cur = ent_init(fname, NULL);

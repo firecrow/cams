@@ -57,6 +57,34 @@ struct commit *commit_init(char *cid){
   return com;
 }
 
+char *san_fname(char *path, bool san){
+  char *name = dk_malloc(sizeof(char)*(strlen(path)+1));
+  char *ptr = name;
+  while(*path != '\0'){
+    if(san){
+      if(*path == '/'){
+        *ptr = '+';
+      }else if(*path == '+'){
+        *path = 26;
+      }else{
+        *ptr = *path;
+      }
+    }else{
+      if(*path == '+'){
+        *ptr = '/';
+      }else if(*path == 26){
+        *ptr = '+';
+      }else{
+        *ptr = *path;
+      }
+    }
+    ptr++;
+    path++;
+  }
+  *ptr = '\0';
+  return name;
+}
+
 /*
 int show_commit(int argc, char **argv, struct intls *intls){
   char *cid = argv[2];
@@ -80,3 +108,5 @@ int show_commit(int argc, char **argv, struct intls *intls){
   return 0;
 }
 */
+
+
