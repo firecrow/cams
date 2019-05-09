@@ -104,20 +104,6 @@ int checkout(int argc, char **argv, struct intls *intls){
 }
 */
 
-/*
-int run_cmd(int argc, char **argv, struct intls *intls, struct opt_cmd cmds[]){
-  int i = 0;
-  while(cmds[i].name != NULL){
-    if(strlen(cmds[i].name) == strlen(argv[1]) 
-        && !strncmp(cmds[i].name, argv[1], strlen(cmds[i].name))){
-      return cmds[i].fnc(argc, argv, intls);
-    }
-    i++;
-  }
-  return -1;
-}
-*/
-
 char *op;
 struct ct_tree *opkv;
 struct ct_tree *ophandlers;

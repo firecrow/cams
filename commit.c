@@ -10,7 +10,7 @@ char *get_current(){
   return ct_fread(".cams/current");
 }
 
-void parse_cid(char *_cid, struct commit *com){
+void parse_cid(char *_cid, struct timespec *time, char **name){
   char *cid = dupstr(_cid);
   int i = 0;
   char *p = cid;
@@ -22,14 +22,16 @@ void parse_cid(char *_cid, struct commit *com){
     if(*p == '.'){
       if(in_nsec){
         *p = '\0';
-        com->time.tv_nsec = atoi(pp);
+        time->tv_nsec = atoi(pp);
         pp = p+1;
         in_nsec = 0;
       }else{
         *p = '\0';
-        com->time.tv_sec = atoi(pp);
+        time->tv_sec = atoi(pp);
         pp = p+1;
-        com->name = dk_fmtmem("%s", pp);
+        if(name){
+          *name = dk_fmtmem("%s", pp);
+        }
       }
     }
     p++;
@@ -43,7 +45,7 @@ struct commit *commit_init(char *cid){
   char *path;
 
   com->cid = cid;
-  parse_cid(cid, com);
+  parse_cid(cid, &(com->time), &(com->name));
 
   path = dk_fmtmem("%s/%s", basedir, "parent");
   if(!ct_fexists(path)){
@@ -86,7 +88,7 @@ char *san_fname(char *path, bool san){
 }
 
 /*
-int show_commit(int argc, char **argv, struct intls *intls){
+int show_commit(int argc, char **argv){
   char *cid = argv[2];
   struct commit *com = commit_init(cid);
   struct ct_leaf kv = {NULL, 0, NULL};
@@ -109,4 +111,42 @@ int show_commit(int argc, char **argv, struct intls *intls){
 }
 */
 
+struct ct_tree *cindex_to_tree(char *cid){
+  struct ct_tree *tree = ent_tree_init();
+  if(!cid){
+    return tree;
+  }
+  char buff[1024];
+  int len;
+  struct ent *cur;
+  struct ct_leaf kv = {NULL, 0, NULL};
+  struct ct_leaf ckv = {NULL, 0, NULL};
+  char *path = dk_fmtmem(".cams/%s/cindex", cid);
+  FILE *file = dk_open(path, "r");
+  while(fgets(buff, 1024, file) != NULL){
+    cur = ent_from_line(buff);
+    parse_cid(cur->cid, &cur->time, NULL);
+    kv.key = cur->path;
+    kv.data = cur;
+    ct_tree_set(tree, &kv);
+  }
+  fclose(file);
+  return tree;
+}
 
+int cfiles_filter(struct ct_leaf *kv, void *data){
+    char *cid = (char *)data;
+    struct ent *cur = (struct ent *)kv->data;  
+    if(!strcmp(cur->cid, cid)){
+      return true;
+    }
+    return false;
+}
+
+struct ct_tree *cfiles(char *cid){
+  struct ct_tree *tree = cindex_to_tree(cid);
+  struct ct_tree *dest = ct_tree_filter(tree, cfiles_filter, cid);
+  tree->free = NULL; 
+  ct_tree_free(tree);
+  return dest;
+}

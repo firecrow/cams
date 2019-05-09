@@ -203,7 +203,7 @@ int ct_split(char *_str, char c, struct crray *arr){
     if(*p == c){
       *p = '\0';
       arr->add(arr, dupstr(last));
-      last = p;
+      last = p+1;
       found++;
     }
     p++;
