@@ -91,11 +91,11 @@ int checkout(int argc, char **argv, struct intls *intls){
     parse_remote(&r, ruri->value);
     char *rlatest = latest_remote(&r);
     mkdir(rlatest, 0775);
-    /* get the latest cindex * /
+    / * get the latest cindex * /
     scp_down(&r, dk_fmtmem("%s/%s/cindex", r.path, rlatest), rlatest, NULL);
-    /* make a tar of the files * /
-    /* pull it down, and unpack it * /
-    /* rename the artifacts * /
+    / * make a tar of the files * /
+    / * pull it down, and unpack it * /
+    / * rename the artifacts * /
     return 0;
   }else{
     fprintf(stderr, "Non remote checkin not yet supported.\n");

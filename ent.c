@@ -25,7 +25,7 @@ void ct_free_ent_node(void *key, void *data){
 }
 
 struct ct_tree *ent_tree_init(){
-  return ct_tree_init(ct_cmp_alpha, ct_free_ent_node, NULL);
+  return ct_tree_init(ct_cmp_alpha, NULL, NULL);
 }
 
 char *gen_path(struct ent* cur, bool current){
@@ -76,9 +76,9 @@ struct ent *ent_from_line(char *line){
     exit(123);
   }
   char *cid;
-  arr->get(arr, 0, &cid);
+  arr->get(arr, 0, (void **)&cid);
   char *fname;
-  arr->get(arr, 1, &fname);
+  arr->get(arr, 1, (void **)&fname);
   trimnl(fname);
 
   struct ent *cur = ent_init(fname, NULL);

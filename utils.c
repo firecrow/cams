@@ -88,6 +88,19 @@ void trimnl(char *str){
   }
 }
 
+int ct_subpwait(struct ct_subp *subp){
+  int exited;
+  int status;
+  exited = waitpid(subp->pid, &status, WNOHANG);
+  if(exited != 0){
+    if(WIFEXITED(status)){
+      subp->ret = WEXITSTATUS(status);
+      return 1;
+    }
+  }
+  return exited;
+}
+
 int ct_subp(struct ct_subp *subp){
   int status;
 
@@ -138,19 +151,6 @@ int ct_subp(struct ct_subp *subp){
   }
 }
 
-int ct_subpwait(struct ct_subp *subp){
-  int exited;
-  int status;
-  exited = waitpid(subp->pid, &status, WNOHANG);
-  if(exited != 0){
-    if(WIFEXITED(status)){
-      subp->ret = WEXITSTATUS(status);
-      return 1;
-    }
-  }
-  return exited;
-}
-
 struct ct_strbuff *ct_strbuff_init(){
   struct ct_strbuff *buff = dk_malloc(sizeof(struct ct_strbuff));
   buff->len = 0;
@@ -194,7 +194,7 @@ int ct_strbuff_shift(struct ct_strbuff *buff, size_t len, char **dest){
   return 0;
 }
 
-int ct_split(const char *_str, char c, struct crray *arr){
+int ct_split(char *_str, char c, struct crray *arr){
   int found = 0;
   char *str = dupstr(_str);
   char *p = str;

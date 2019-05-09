@@ -35,7 +35,6 @@ int list(){
     */
   }
 
-  printf("qty:%d\n", qty);
   /*
   if(opts->argc > 2){
     cid = lookup_or_die(opts->argv[1]);
@@ -53,7 +52,7 @@ int list(){
     char *time = ctime(&(com->time.tv_sec));
     trimnl(time);
 
-    printf("cid:%s %d/%d %s %s: %s\n", cid, com->time.tv_sec, com->time.tv_nsec, tbuff, com->name, com->message);
+    printf("cid:%s %ld/%ld %s %s: %s\n", cid, com->time.tv_sec, com->time.tv_nsec, tbuff, com->name, com->message);
     /*
     char *idxfname = dk_fmtmem(".cams/%s/cindex", cid);
     FILE *idxf = dk_open(idxfname, "r");
@@ -80,7 +79,7 @@ int list(){
       }
       printf("%s", buff);
     }else{
-      /*printf( "%s|%09ld: %s (%s)\n", hash, com->time.tv_nsec, com->message, filestr);* /
+      / *printf( "%s|%09ld: %s (%s)\n", hash, com->time.tv_nsec, com->message, filestr);* /
       printf( "%09ld: %s (%s)\n", com->time.tv_nsec, com->message, filestr);
     }
     if(filestr != NULL){
