@@ -199,7 +199,7 @@ int ct_split(char *_str, char c, struct crray *arr){
   char *str = dupstr(_str);
   char *p = str;
   char *last = p;
-  while(p != '\0'){
+  while(*p != '\0'){
     if(*p == c){
       *p = '\0';
       arr->add(arr, dupstr(last));
@@ -208,7 +208,7 @@ int ct_split(char *_str, char c, struct crray *arr){
     }
     p++;
   }
-  if(last != p-1){
+  if(last != p){
     arr->add(arr, dupstr(last));
   }
   return found;

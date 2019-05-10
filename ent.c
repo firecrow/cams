@@ -24,10 +24,6 @@ void ct_free_ent_node(void *key, void *data){
   ent_free(cur);
 }
 
-struct ct_tree *ent_tree_init(){
-  return ct_tree_init(ct_cmp_alpha, NULL, NULL);
-}
-
 char *gen_path(struct ent* cur, bool current){
   return dk_fmtmem("%s.%s", (current ? cur->cid : cur->prior), cur->spath);
 }

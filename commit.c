@@ -112,7 +112,7 @@ int show_commit(int argc, char **argv){
 */
 
 struct ct_tree *cindex_to_tree(char *cid){
-  struct ct_tree *tree = ent_tree_init();
+  struct ct_tree *tree = ct_tree_alpha_init();
   if(!cid){
     return tree;
   }
@@ -135,12 +135,13 @@ struct ct_tree *cindex_to_tree(char *cid){
 }
 
 int cfiles_filter(struct ct_leaf *kv, void *data){
-    char *cid = (char *)data;
-    struct ent *cur = (struct ent *)kv->data;  
-    if(!strcmp(cur->cid, cid)){
-      return true;
-    }
-    return false;
+  printf("filter\n");
+  char *cid = (char *)data;
+  struct ent *cur = (struct ent *)kv->data;  
+  if(!strcmp(cur->cid, cid)){
+    return true;
+  }
+  return false;
 }
 
 struct ct_tree *cfiles(char *cid){

@@ -12,9 +12,9 @@
 #include <fcntl.h>
 #include <time.h>
 #include "../crowtils/crowtils.c"
+#include "../crray/crray.c"
 #include "../crowtree/tree.c"
 #include "../crowarg/crowarg.c"
-#include "../crray/crray.c"
 #include "utils.c"
 char *san_fname(char *path, bool san);
 #include "ent.c"

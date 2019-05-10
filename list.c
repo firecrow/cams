@@ -52,7 +52,19 @@ int list(){
     char *time = ctime(&(com->time.tv_sec));
     trimnl(time);
 
+    struct ct_tree *ctree = cfiles(com->cid);
+    char *cfilestr = ct_tree_alpha_join(ctree, ", ");
+
     printf("cid:%s %ld/%ld %s %s: %s\n", cid, com->time.tv_sec, com->time.tv_nsec, tbuff, com->name, com->message);
+    printf("%s", cfilestr);
+
+    if(qty && ++count == qty){
+      break;
+    };
+    cid = com->parent;
+
+
+
     /*
     char *idxfname = dk_fmtmem(".cams/%s/cindex", cid);
     FILE *idxf = dk_open(idxfname, "r");
@@ -61,8 +73,6 @@ int list(){
     hash[16] = '\0';
     struct commit *com = commit_init(cid);
     trimnl(com->message);
-    struct ct_tree *ctree = cfiles(com->cid);
-    cfilestr = ct_tree_alpha_join(ctree, ", ");
     struct ct_tree *rmtree = rmlist(com->cid);
     rmfilestr = dk_fmtmem("-%s", ct_tree_alpha_join(rmtree, ", -"));
     if(ctree->len && rmtree->len){
@@ -86,10 +96,6 @@ int list(){
       dk_free(filestr);
     }
     */
-    if(qty && ++count == qty){
-      break;
-    };
-    cid = com->parent;
   }
   return 0;
 }
