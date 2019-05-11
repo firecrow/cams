@@ -34,8 +34,6 @@ int list(){
     }
     */
   }
-  /* debug */
-  qty = 10;
 
   /*
   if(opts->argc > 2){
@@ -58,7 +56,7 @@ int list(){
     char *cfilestr = cfiles_join(ctree);
 
     printf("cid:%s %ld/%ld %s %s: %s\n", cid, com->time.tv_sec, com->time.tv_nsec, tbuff, com->name, com->message);
-    printf("files: %s\n", cfilestr);
+    printf("cfiles: %s\n", cfilestr);
 
     if(qty && (count+=2) == qty){
       break;
