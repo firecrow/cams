@@ -195,14 +195,20 @@ int ct_strbuff_shift(struct ct_strbuff *buff, size_t len, char **dest){
 }
 
 int ct_split(char *_str, char c, struct crray *arr){
+
   int found = 0;
   char *str = dupstr(_str);
   char *p = str;
   char *last = p;
+  int i = 0;
+  char *out;
+  char *item;
   while(*p != '\0'){
     if(*p == c){
       *p = '\0';
-      arr->add(arr, dupstr(last));
+      item = dupstr(last);
+      arr->add(arr, item);
+      arr->get(arr, i, &out);
       last = p+1;
       found++;
     }
@@ -210,7 +216,7 @@ int ct_split(char *_str, char c, struct crray *arr){
   }
   if(last != p){
     arr->add(arr, dupstr(last));
+    last = p+1;
   }
   return found;
 }
-

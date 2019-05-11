@@ -135,7 +135,6 @@ struct ct_tree *cindex_to_tree(char *cid){
 }
 
 int cfiles_filter(struct ct_leaf *kv, void *data){
-  printf("filter\n");
   char *cid = (char *)data;
   struct ent *cur = (struct ent *)kv->data;  
   if(!strcmp(cur->cid, cid)){
@@ -151,3 +150,25 @@ struct ct_tree *cfiles(char *cid){
   ct_tree_free(tree);
   return dest;
 }
+
+char *cfiles_join(struct ct_tree *cfiles){
+  struct ct_leaf leaf;
+  bzero(&leaf, sizeof(struct ct_leaf));
+  struct crowbuff *buff = crowbuff_init();
+  int first = 1;
+  char sep[] = ", ";
+  while(!ct_tree_next(cfiles, &leaf)){
+    if(leaf.key == NULL)
+      break;
+    if(first)
+      first = 0;
+    else
+      buff->push(buff, sep, strlen(sep));
+    struct ent *cur = (struct ent *)leaf.data;
+    buff->push(buff, cur->path, strlen(cur->path));
+  }
+  char *content = buff->content;
+  free(buff);
+  return content;
+}
+

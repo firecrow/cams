@@ -34,6 +34,8 @@ int list(){
     }
     */
   }
+  /* debug */
+  qty = 10;
 
   /*
   if(opts->argc > 2){
@@ -53,12 +55,12 @@ int list(){
     trimnl(time);
 
     struct ct_tree *ctree = cfiles(com->cid);
-    char *cfilestr = ct_tree_alpha_join(ctree, ", ");
+    char *cfilestr = cfiles_join(ctree);
 
     printf("cid:%s %ld/%ld %s %s: %s\n", cid, com->time.tv_sec, com->time.tv_nsec, tbuff, com->name, com->message);
-    printf("%s", cfilestr);
+    printf("files: %s\n", cfilestr);
 
-    if(qty && ++count == qty){
+    if(qty && (count+=2) == qty){
       break;
     };
     cid = com->parent;
