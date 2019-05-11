@@ -1,5 +1,3 @@
-#include "cams.h"
-
 struct ignore {
   int len;
   char **pieces;

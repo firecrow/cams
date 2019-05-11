@@ -1,25 +1,4 @@
-/*
 #include "cams.h"
-#include "utils.c"
-#include "sync.c"
-*/
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include <errno.h>
-#include <sys/ioctl.h>
-#include <fcntl.h>
-#include <time.h>
-#include "../crowtils/crowtils.c"
-#include "../crray/crray.c"
-#include "../crowtree/tree.c"
-#include "../crowarg/crowarg.c"
-#include "utils.c"
-char *san_fname(char *path, bool san);
-#include "ent.c"
-#include "commit.c"
-#include "list.c"
 
 int usage(){
   printf("cams\n    help|init|add|commit|list|diff|push [args...]\n");

@@ -7,10 +7,6 @@ int list(){
   int qty = 0;
   int cols;
   char *buff;
-  /*
-  struct opts *opts = getopts(argc, argv);
-  struct opt_value *optval;
-  */
 
   /* bool fit = (find_opt(opts, 'f', "fit")) ? true : false;*/
   bool fit = true;
@@ -23,25 +19,8 @@ int list(){
     buff = dk_malloc(cols);
   }else{
     qty = 10;
-    /*
-    optval = find_opt(opts, 'q', "quantity");
-    if(optval && optval->value){
-      if(!strcmp(optval->value, "all")){
-        qty = 0;
-      }else{
-        qty = atoi(optval->value);
-      }
-    }
-    */
   }
 
-  /*
-  if(opts->argc > 2){
-    cid = lookup_or_die(opts->argv[1]);
-  }else{
-    cid = get_current();
-  }
-  */
   cid = get_current();
   while(cid){
     struct commit *com = commit_init(cid);
@@ -62,40 +41,87 @@ int list(){
       break;
     };
     cid = com->parent;
-
-
-
-    /*
-    char *idxfname = dk_fmtmem(".cams/%s/cindex", cid);
-    FILE *idxf = dk_open(idxfname, "r");
-    char *hash = dk_malloc(64+1);
-    int ret = ct_filehash(idxf, hash);
-    hash[16] = '\0';
-    struct commit *com = commit_init(cid);
-    trimnl(com->message);
-    struct ct_tree *rmtree = rmlist(com->cid);
-    rmfilestr = dk_fmtmem("-%s", ct_tree_alpha_join(rmtree, ", -"));
-    if(ctree->len && rmtree->len){
-      filestr = dk_fmtmem("%s, %s", cfilestr, rmfilestr);
-    }else if(rmtree->len){
-      filestr = rmfilestr; 
-    }else{
-      filestr = cfilestr; 
-    }
-    if(fit){
-      if(snprintf(buff, cols, "\033[35m%s\033[0m|\033[33m%09ld\033[0m: %s (%s)\n", hash, com->time.tv_nsec, com->message, filestr) > cols){
-        buff[cols-3] = buff[cols-2] = buff[cols-1] = '.';
-        buff[cols] = '\n';
-      }
-      printf("%s", buff);
-    }else{
-      / *printf( "%s|%09ld: %s (%s)\n", hash, com->time.tv_nsec, com->message, filestr);* /
-      printf( "%09ld: %s (%s)\n", com->time.tv_nsec, com->message, filestr);
-    }
-    if(filestr != NULL){
-      dk_free(filestr);
-    }
-    */
   }
+  return 0;
+}
+
+struct stbuckets * gen_stbuckets(char *cid){
+  struct ct_tree *untracked = slist();
+  struct ct_tree *staged = flist();
+  struct ct_tree *cindex = cindex_to_tree(cid);
+  struct ct_tree *removed = ct_tree_alpha_init();
+  struct ct_tree *modified = ct_tree_alpha_init();
+  struct ct_leaf kv = {NULL, NULL};
+
+  struct stbuckets *buckets = dk_malloc(sizeof(struct stbuckets));
+
+  if(staged->len){
+    kv.key = NULL;
+    while(!ct_tree_next(staged, &kv)){
+      ct_tree_unset(untracked, &kv);
+    }
+  }
+
+  if(cindex->len){
+    kv.key = NULL;
+    while(!ct_tree_next(cindex, &kv)){
+      ct_tree_unset(untracked, &kv);
+      struct ent *cur = kv.data;
+      if (ct_fexists(cur->path)) {
+        kv.key = cur->path;
+        kv.data = cur;
+        ct_tree_set(removed, &kv);
+      }else if (is_modified(cur)) {
+        kv.key = cur->path;
+        kv.data = cur;
+        ct_tree_set(modified, &kv);
+      }
+    }
+  }
+  buckets->staged = staged;
+  buckets->removed = removed;
+  buckets->modified = modified;
+  buckets->untracked = untracked;
+  return buckets;
+}
+
+int status(int argc, char **argv, struct intls *intls){
+  char *cid = get_current();
+  struct stbuckets *stb = gen_stbuckets(cid);
+  struct ct_leaf kv = {NULL, NULL};
+
+
+  if(stb->staged->len){
+    printf("\033[34m--- staged files ---\033[0m\n");
+    kv.key = NULL;
+    while(!ct_tree_next(stb->staged, &kv)){
+      printf("%s\n", kv.key);
+    }
+  }
+
+  if(stb->removed->len){
+    printf("\033[34m--- staged for removal ---\033[0m\n");
+    kv.key = NULL;
+    while(!ct_tree_next(stb->removed, &kv)){
+      printf("%s\n", kv.key);
+    }
+  }
+
+  if(stb->modified->len){
+    printf("\033[34m--- modified ---\033[0m\n");
+    kv.key = NULL;
+    while(!ct_tree_next(stb->modified, &kv)){
+      printf("%s\n", kv.key);
+    }
+  }
+
+  if(stb->untracked->len){
+    printf("\033[34m--- untracked files ---\033[0m\n");
+    kv.key = NULL;
+    while(!ct_tree_next(stb->untracked, &kv)){
+      printf("%s\n", kv.key);
+    }
+  }
+
   return 0;
 }

@@ -1,35 +1,24 @@
-#include <dirent.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <ftw.h>
+#include <stdlib.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <sys/ioctl.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <sys/timespec.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <time.h>
+#include <dirent.h>
 #include <unistd.h>
-char *san_fname(char *path, bool san);
-#include "../crowarg/crowarg.c"
+#include "../crowtils/crowtils.c"
+#include <time.h>
+#include <sys/timespec.h>
+#include <sys/time.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#include <ftw.h>
+#include "../crowtree/tree.c"
 #include "../crowopt/opt.h"
-#include "../crowtils/crowtils.c"
-#include "../crowtils/crowtils.c"
-#include "../crowtree/tree.c"
-#include "../crowtree/tree.c"
-#include "../crray/crray.c"
-#include "commit.c"
-#include "ent.c"
-#include "list.c"
-#include "slist.c"
-#include "utils.c"
-
 
 struct remote {
   char *name;

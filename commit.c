@@ -172,3 +172,23 @@ char *cfiles_join(struct ct_tree *cfiles){
   return content;
 }
 
+struct ct_tree *flist(){
+  DIR *d;
+  struct dirent *dp;
+  if((d = opendir(".cams/stage/files")) == NULL){
+    fprintf(stderr, "unable to open stage/files");
+    exit(123);
+  }
+  struct ent *cur;
+  struct ct_key_data kv = {NULL, NULL};
+  struct ct_tree *tree = ent_tree_init();
+  while((dp = readdir(d)) != NULL){
+    if(!strncmp(".", dp->d_name, 1) || !strncmp("..", dp->d_name, 2))
+      continue;
+    cur = ent_init(NULL, dk_fmtmem(dp->d_name));
+    kv.key = cur->path;
+    kv.data = cur;
+    ct_tree_set(tree, &kv);
+  }
+  return tree;
+}
