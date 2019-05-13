@@ -201,30 +201,50 @@ int ct_split(char *_str, char c, struct crray *arr){
 }
 
 /* 1 is not match 0 is match */
-ct_fcompare(FILE *a, FILE *b){
+ct_fcompare(char *apath, int alen, char *bpath, int blen){
   char ba[CT_FCOMPARE_SIZE];
   char bb[CT_FCOMPARE_SIZE];
+  FILE *a, *b;
   int la, lb, r, end;
+  struct stat astat;
+  struct stat bstat;
+
+  if(!alen){
+    xok(stat(a, &astat));
+    alen = astat.st_size;
+  }
+  if(!blen){
+    xok(stat(b, &astat));
+    blen = bstat.st_size;
+  }
+  if(alen != blen)
+    return (1);
+
+  xokptr(a = fopen(apath, "r"));
+  xokptr(b = fopen(bpath, "r"));
+
   la = lb = CT_FCOMPARE_SIZE;
   while(!end){
     do {
       r = read(a, &ba, CT_FCOMPARE_SIZE);
-      la += r;
+      la -= r;
       if(!r)
         end = 1;
     } while (!end && la < CT_FCOMPARE_SIZE);
     do {
       r = read(b, &bb, CT_FCOMPARE_SIZE);
-      lb += r;
+      lb -= r;
       if(!r)
         end = 1;
-    } while (!end && la < CT_FCOMPARE_SIZE);
-    if(la != lb){
-      return 1;
-    }
+    } while (!end && lb < CT_FCOMPARE_SIZE);
+    if(la != lb)
+      return (1);
+
     if(strncmp(ba, bb, CT_FCOMPARE_SIZE - la)){
       return 1;
     }
+    la = lb = CT_FCOMPARE_SIZE;
+    r = 0;
   }
   return 0;
 }

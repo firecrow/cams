@@ -42,17 +42,13 @@ bool is_modified (struct ent *cur){
   }
 
   if(is_mod){
-    if (!ct_fexists(cur->path)) {
-      wrk_file = dk_open(cur->path, "r");
-    }
     if(is_staged){
       compare_path = staged_path;
     }else{
       compare_path = dk_fmtmem(".cams/files/%s.%s", cur->cid, cur->spath);
     }
     if (!ct_fexists(compare_path)) {
-      cur_file = dk_open(compare_path, "r");
-      ret = ct_fcompare(wrk_file, cur_file) != 0;
+      ret = ct_fcompare(cur->path, 0, compare_path, 0) != 0;
       fclose(cur_file);
       fclose(wrk_file);
       return ret;

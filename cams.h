@@ -21,6 +21,7 @@
 #include "../crowtils/crowtils.c"
 #include "../crowtree/tree.c"
 #include "../crray/crray.c"
+#include "../crowx/crowx.c"
 
 
 struct remote {
