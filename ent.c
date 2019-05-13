@@ -1,19 +1,3 @@
-struct ent {
-  char *path;
-  char *spath;
-  char *cid;
-  char *prior;
-  struct timespec time;
-};
-
-char *ent_tostr(struct ent *cur);
-void ct_free_ent_node(void *key, void *data);
-struct ct_tree *ent_tree_init();
-char *gen_path(struct ent* cur, bool current);
-struct ent *ent_init(char *path, char *spath);
-void ent_free(struct ent *cur);
-struct ent *ent_from_line(char *line);
-
 
 char *ent_tostr(struct ent *cur){
   return dk_fmtmem("<ent path:%s, spath:%s, cid:%s, prior:%s>", cur->path, cur->spath, cur->cid, cur->prior);

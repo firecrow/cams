@@ -1,3 +1,67 @@
+long ts_delta(struct timespec *a, struct timespec *b){
+  if(a->tv_sec != b->tv_sec){
+    return b->tv_sec - a->tv_sec;
+  }else{
+    return (b->tv_nsec < a->tv_nsec ? 1 : -1);
+  }
+}
+
+bool is_modified (struct ent *cur){
+  struct stat stg_stat;
+  struct stat cur_stat;
+  struct timespec cid_time;
+  char *staged_path;
+  char *compare_path;
+  int show_mod = 0;
+  char cur_hash[64+1];
+  bool is_staged = true; 
+  bool is_mod;
+  FILE *cur_file;
+  FILE *wrk_file;
+  FILE *compare;
+  bool ret;
+
+  bzero(cur_hash, 64+1);
+  bzero(&stg_stat, sizeof(struct stat));
+  bzero(&cur_stat, sizeof(struct stat));
+  bzero(&cid_time, sizeof(struct timespec));
+
+  staged_path = dk_fmtmem(".cams/stage/files/%s", cur->path);
+  parse_cid(cur->cid, &cid_time, NULL);
+  if (stat(cur->path, &cur_stat) != 0 ){
+    fprintf(stderr, "error with stat for current item '%s' %d\n", cur->path, errno); 
+    return (errno);
+  }
+  if (stat(staged_path, &stg_stat) != 0) {
+    is_staged = false;
+  }
+  if (is_staged) {
+    is_mod = ts_delta(&stg_stat.st_mtim, &cur_stat.st_mtim) > 0;
+  }else{
+    is_mod = ts_delta(&cid_time, &cur_stat.st_ctim) > 0;
+  }
+
+  if(is_mod){
+    if (!ct_fexists(cur->path)) {
+      wrk_file = dk_open(cur->path, "r");
+    }
+    if(is_staged){
+      compare_path = staged_path;
+    }else{
+      compare_path = dk_fmtmem(".cams/files/%s.%s", cur->cid, cur->spath);
+    }
+    if (!ct_fexists(compare_path)) {
+      cur_file = dk_open(compare_path, "r");
+      ret = ct_fcompare(wrk_file, cur_file) != 0;
+      fclose(cur_file);
+      fclose(wrk_file);
+      return ret;
+    }
+    return true;
+  }
+  return false;
+}
+
 int list(){
   char *cid;
   char *filestr;
@@ -37,7 +101,8 @@ int list(){
     printf("cid:%s %ld/%ld %s %s: %s\n", cid, com->time.tv_sec, com->time.tv_nsec, tbuff, com->name, com->message);
     printf("cfiles: %s\n", cfilestr);
 
-    if(qty && (count+=2) == qty){
+    count += 2;
+    if(qty && count >= qty){
       break;
     };
     cid = com->parent;
@@ -125,3 +190,5 @@ int status(int argc, char **argv, struct intls *intls){
 
   return 0;
 }
+
+

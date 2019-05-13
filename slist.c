@@ -1,23 +1,19 @@
-struct ignore {
-  int len;
-  char **pieces;
-};
-
-static struct ignore ign; 
+struct crray *ign; 
 struct ct_tree *present;
 
 int process(const char *_fpath, const struct stat *sb, int flags){
-  struct ct_key_data kv = {NULL, NULL};
+  struct ct_leaf kv = {NULL, 0, NULL};
   char *fpath = (char *)_fpath;
-  fpath++;
-  fpath++;
+  fpath += 2;
   bool show = true;
   if(strlen(fpath) == 0 || !strncmp(".cams", fpath, strlen(".cams"))){
     show = false;
   }
   int i = 0;
-  while(i < ign.len){
-    if(!strncmp(ign.pieces[i], fpath, strlen(ign.pieces[i]))){
+  while(i < ign->length){
+    char *g;
+    ign->get(ign, i, &g);
+    if(!strncmp(g, fpath, strlen(g))){
       show = false;
     }
     i++;
@@ -33,12 +29,11 @@ int process(const char *_fpath, const struct stat *sb, int flags){
 struct ct_tree *slist(){
   present = ct_tree_alpha_init();
   char *ignore;
+  struct crray *ign = crray_str_init();
   if(!ct_fexists(".cams/ignore")){
     ignore = ct_fread(".cams/ignore");
     trimnl(ignore);
-    ign.len = ct_split(ignore, '\n', 0, &ign.pieces);
-  }else{
-    ign.len = 0; 
+    ct_split(ignore, '\n', ign);
   }
   ftw(".", process, 512);
   return present;

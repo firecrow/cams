@@ -16,19 +16,11 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
-char *san_fname(char *path, bool san);
 #include "../crowarg/crowarg.c"
 #include "../crowopt/opt.h"
 #include "../crowtils/crowtils.c"
-#include "../crowtils/crowtils.c"
-#include "../crowtree/tree.c"
 #include "../crowtree/tree.c"
 #include "../crray/crray.c"
-#include "commit.c"
-#include "ent.c"
-#include "list.c"
-#include "slist.c"
-#include "utils.c"
 
 
 struct remote {
@@ -117,6 +109,7 @@ struct ct_subp {
   int errs[2];
   int flags;
 };
+#define CT_FCOMPARE_SIZE 1024
 char *dupstr(char *str);
 char *dupnstr(char *str, int len);
 int flen(char *path);
@@ -124,7 +117,7 @@ int fexists(char *path);
 bool feq(char *path_a, char *path_b);
 char *ct_fread(char *path);
 int localize_fname(char *fname);
-int ct_split(char *str, char c, int limit, char ***ret);
+int ct_split(char *_str, char c, struct crray *arr);
 void trimnl(char *str);
 int ct_subp(struct ct_subp *subp);
 int ct_subpwait(struct ct_subp *subp);
@@ -139,7 +132,7 @@ void generate_cindex(char *cid);
 char *san_fname(char *path, bool san);
 char *gen_cid();
 struct ct_tree *flist();
-bool cfiles_filter(struct ct_key_data *kv, void *data);
+int cfiles_filter(struct ct_leaf *kv, void *data);
 struct ct_tree *cfiles(char *cid);
 struct ct_tree *rmlist(char *cid);
 struct ct_tree *cindex_to_tree(char *cid);
@@ -201,3 +194,8 @@ struct ct_tree *slist();
 #endif
 
 
+#include "commit.c"
+#include "ent.c"
+#include "list.c"
+#include "slist.c"
+#include "utils.c"

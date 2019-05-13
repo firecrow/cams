@@ -1,11 +1,3 @@
-struct commit {
-  char *cid;
-  char *parent;
-  struct timespec time;
-  char *name;
-  char *message;
-};
-
 char *get_current(){
   return ct_fread(".cams/current");
 }
@@ -180,8 +172,8 @@ struct ct_tree *flist(){
     exit(123);
   }
   struct ent *cur;
-  struct ct_key_data kv = {NULL, NULL};
-  struct ct_tree *tree = ent_tree_init();
+  struct ct_leaf kv = {NULL,0, NULL};
+  struct ct_tree *tree = ct_tree_alpha_init();
   while((dp = readdir(d)) != NULL){
     if(!strncmp(".", dp->d_name, 1) || !strncmp("..", dp->d_name, 2))
       continue;

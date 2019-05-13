@@ -1,24 +1,3 @@
-struct ct_subp {
-  char *cmd;
-  char **argv;
-  FILE *stdin;
-  FILE *stdout;
-  FILE *stderr;
-  int pid;
-  int ret;
-  int ins[2];
-  int outs[2];
-  int errs[2];
-  int flags;
-};
-
-enum CT_SUBP_FLAGS {
-  CT_USE_STDIN = 1,
-  CT_USE_STDOUT = 2,
-  CT_USE_STDERR = 4,
-  CT_SUBP_ASYNC = 8
-};
-
 char *dupstr(char *str){
   size_t len = strlen(str);
   char *dest = dk_malloc(len+1);
@@ -219,4 +198,33 @@ int ct_split(char *_str, char c, struct crray *arr){
     last = p+1;
   }
   return found;
+}
+
+/* 1 is not match 0 is match */
+ct_fcompare(FILE *a, FILE *b){
+  char ba[CT_FCOMPARE_SIZE];
+  char bb[CT_FCOMPARE_SIZE];
+  int la, lb, r, end;
+  la = lb = CT_FCOMPARE_SIZE;
+  while(!end){
+    do {
+      r = read(a, &ba, CT_FCOMPARE_SIZE);
+      la += r;
+      if(!r)
+        end = 1;
+    } while (!end && la < CT_FCOMPARE_SIZE);
+    do {
+      r = read(b, &bb, CT_FCOMPARE_SIZE);
+      lb += r;
+      if(!r)
+        end = 1;
+    } while (!end && la < CT_FCOMPARE_SIZE);
+    if(la != lb){
+      return 1;
+    }
+    if(strncmp(ba, bb, CT_FCOMPARE_SIZE - la)){
+      return 1;
+    }
+  }
+  return 0;
 }
