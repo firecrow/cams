@@ -108,13 +108,17 @@ int list(){
 
 struct stbuckets * gen_stbuckets(char *cid){
   struct ct_tree *untracked = slist();
+  printf("slist len:%d.....\n", untracked->len);
   struct ct_tree *staged = flist();
   struct ct_tree *cindex = cindex_to_tree(cid);
   struct ct_tree *removed = ct_tree_alpha_init();
   struct ct_tree *modified = ct_tree_alpha_init();
   struct ct_leaf kv = {NULL, 0, NULL};
 
-  struct stbuckets *buckets = dk_malloc(sizeof(struct stbuckets));
+  printf("before......\n");
+  struct stbuckets *buckets;
+  xokptr(buckets = malloc(sizeof(struct stbuckets)));
+  printf("...after\n");
 
   if(staged->len){
     kv.key = NULL;
@@ -123,22 +127,28 @@ struct stbuckets * gen_stbuckets(char *cid){
     }
   }
 
+  printf("...after 2\n");
   if(cindex->len){
     kv.key = NULL;
     while(!ct_tree_next(cindex, &kv)){
-      ct_tree_unset(untracked, &kv);
+      printf("...after 2a %s\n", kv.key);
       struct ent *cur = kv.data;
+      printf("...after 2a.1\n");
+      ct_tree_unset(untracked, &kv);
       if (ct_fexists(cur->path)) {
+        printf("...after 2b\n");
         kv.key = cur->path;
         kv.data = cur;
         ct_tree_set(removed, &kv);
       }else if (is_modified(cur)) {
+        printf("...after 2c\n");
         kv.key = cur->path;
         kv.data = cur;
         ct_tree_set(modified, &kv);
       }
     }
   }
+  printf("...after 3\n");
   buckets->staged = staged;
   buckets->removed = removed;
   buckets->modified = modified;
@@ -147,10 +157,12 @@ struct stbuckets * gen_stbuckets(char *cid){
 }
 
 int status(int argc, char **argv, struct intls *intls){
+  printf("in status\n");
   char *cid = get_current();
+  printf("cid:%s\n", cid);
   struct stbuckets *stb = gen_stbuckets(cid);
   struct ct_leaf kv = {NULL, 0, NULL};
-
+  printf("after buckets\n");
 
   if(stb->staged->len){
     printf("\033[34m--- staged files ---\033[0m\n");

@@ -119,7 +119,7 @@ int main(int argc, char **argv){
     {"commit", 0, NULL},
     {"checkout", 0, NULL},
     {"list", 0, list},
-    {"status", 0, NULL},
+    {"status", 0, status},
     {"diff", 0, NULL},
     {"push", 0, NULL},
     {"show", 0, NULL},

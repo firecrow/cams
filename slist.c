@@ -29,7 +29,7 @@ int process(const char *_fpath, const struct stat *sb, int flags){
 struct ct_tree *slist(){
   present = ct_tree_alpha_init();
   char *ignore;
-  struct crray *ign = crray_str_init();
+  ign = crray_str_init();
   if(!ct_fexists(".cams/ignore")){
     ignore = ct_fread(".cams/ignore");
     trimnl(ignore);
