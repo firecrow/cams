@@ -4,6 +4,8 @@ struct ct_tree *present;
 int process(const char *_fpath, const struct stat *sb, int flags){
   struct ct_leaf kv = {NULL, 0, NULL};
   char *fpath = (char *)_fpath;
+  if(strlen(fpath) == 1 && fpath[0] == '.')
+    return (0);
   fpath += 2;
   bool show = true;
   if(strlen(fpath) == 0 || !strncmp(".cams", fpath, strlen(".cams"))){
@@ -38,4 +40,3 @@ struct ct_tree *slist(){
   ftw(".", process, 512);
   return present;
 }
-
