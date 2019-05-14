@@ -127,6 +127,7 @@ struct ct_strbuff *ct_strbuff_clear(struct ct_strbuff *buff);
 void ct_strbuff_free(struct ct_strbuff *buff);
 int ct_strbuff_push(struct ct_strbuff *buff, char *str, size_t len);
 int ct_strbuff_shift(struct ct_strbuff *buff, size_t len, char **dest);
+int ct_fcompare(char *apath, int alen, char *bpath, int blen);
 
 /* commit.c */
 void generate_cindex(char *cid);

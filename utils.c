@@ -187,7 +187,7 @@ int ct_split(char *_str, char c, struct crray *arr){
       *p = '\0';
       item = dupstr(last);
       arr->add(arr, item);
-      arr->get(arr, i, &out);
+      arr->get(arr, i, (void **)&out);
       last = p+1;
       found++;
     }
@@ -201,7 +201,7 @@ int ct_split(char *_str, char c, struct crray *arr){
 }
 
 /* 1 is not match 0 is match */
-ct_fcompare(char *apath, int alen, char *bpath, int blen){
+int ct_fcompare(char *apath, int alen, char *bpath, int blen){
   char ba[CT_FCOMPARE_SIZE];
   char bb[CT_FCOMPARE_SIZE];
   FILE *a, *b;
@@ -210,11 +210,11 @@ ct_fcompare(char *apath, int alen, char *bpath, int blen){
   struct stat bstat;
 
   if(!alen){
-    xok(stat(a, &astat));
+    xok(stat(apath, &astat));
     alen = astat.st_size;
   }
   if(!blen){
-    xok(stat(b, &astat));
+    xok(stat(bpath, &astat));
     blen = bstat.st_size;
   }
   if(alen != blen)
@@ -226,13 +226,13 @@ ct_fcompare(char *apath, int alen, char *bpath, int blen){
   la = lb = CT_FCOMPARE_SIZE;
   while(!end){
     do {
-      r = read(a, &ba, CT_FCOMPARE_SIZE);
+      r = fread(&ba, 1, CT_FCOMPARE_SIZE, a);
       la -= r;
       if(!r)
         end = 1;
     } while (!end && la < CT_FCOMPARE_SIZE);
     do {
-      r = read(b, &bb, CT_FCOMPARE_SIZE);
+      r = fread(&bb, 1, CT_FCOMPARE_SIZE, b);
       lb -= r;
       if(!r)
         end = 1;

@@ -12,7 +12,7 @@ int process(const char *_fpath, const struct stat *sb, int flags){
   int i = 0;
   while(i < ign->length){
     char *g;
-    ign->get(ign, i, &g);
+    ign->get(ign, i, (void **)&g);
     if(!strncmp(g, fpath, strlen(g))){
       show = false;
     }
