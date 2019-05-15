@@ -248,3 +248,15 @@ int ct_fcompare(char *apath, int alen, char *bpath, int blen){
   }
   return 0;
 }
+
+int ct_fcopy(char *a, char *b){
+  char bb[CT_FCOMPARE_SIZE];
+  int c;
+  FILE *fa = fopen(a, "r");
+  FILE *fb = fopen(b, "w");
+  for(c = 0; r; r = fread(&bb, 1, CT_FCOMPARE_SIZE, fa)){
+    c += r;
+    fwrite(&bb, 1, r, fb);
+  }
+  return c;
+}
