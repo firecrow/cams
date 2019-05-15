@@ -11,14 +11,18 @@ int process(const char *_fpath, const struct stat *sb, int flags){
   if(strlen(fpath) == 0 || !strncmp(".cams", fpath, strlen(".cams"))){
     show = false;
   }
-  int i = 0;
-  while(i < ign->length){
-    char *g;
-    ign->get(ign, i, (void **)&g);
-    if(!strncmp(g, fpath, strlen(g))){
-      show = false;
+  if(S_ISDIR(sb->st_mode)){
+    show = false; 
+  }else{
+    int i = 0;
+    while(i < ign->length){
+      char *g;
+      ign->get(ign, i, (void **)&g);
+      if(!strncmp(g, fpath, strlen(g))){
+        show = false;
+      }
+      i++;
     }
-    i++;
   }
   if(show){
     kv.key = dupstr(fpath);

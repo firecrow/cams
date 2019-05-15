@@ -7,7 +7,6 @@ long ts_delta(struct timespec *a, struct timespec *b){
 }
 
 bool is_modified (struct ent *cur){
-  printf("in is modified\n");
   struct stat stg_stat;
   struct stat cur_stat;
   struct timespec cid_time;
@@ -17,8 +16,6 @@ bool is_modified (struct ent *cur){
   char cur_hash[64+1];
   bool is_staged = true; 
   bool is_mod;
-  FILE *cur_file;
-  FILE *wrk_file;
   FILE *compare;
   bool ret;
 
@@ -50,8 +47,6 @@ bool is_modified (struct ent *cur){
     }
     if (!ct_fexists(compare_path)) {
       ret = ct_fcompare(cur->path, 0, compare_path, 0) != 0;
-      fclose(cur_file);
-      fclose(wrk_file);
       return ret;
     }
     return true;
@@ -118,7 +113,6 @@ struct stbuckets * gen_stbuckets(char *cid){
   struct stbuckets *buckets;
   xokptr(buckets = malloc(sizeof(struct stbuckets)));
 
-  printf("staged len:%d\n", staged->len);
   if(staged->len){
     kv.key = NULL;
     while(!ct_tree_next(staged, &kv)){
@@ -142,7 +136,6 @@ struct stbuckets * gen_stbuckets(char *cid){
       }
     }
   }
-  printf("...after 3\n");
   buckets->staged = staged;
   buckets->removed = removed;
   buckets->modified = modified;
@@ -151,15 +144,12 @@ struct stbuckets * gen_stbuckets(char *cid){
 }
 
 int status(int argc, char **argv, struct intls *intls){
-  printf("in status\n");
   char *cid = get_current();
-  printf("cid:%s\n", cid);
   struct stbuckets *stb = gen_stbuckets(cid);
   struct ct_leaf kv = {NULL, 0, NULL};
-  printf("after buckets\n");
 
   if(stb->staged->len){
-    printf("\033[34m--- staged files ---\033[0m\n");
+    printf("\033[32m--- staged files ---\033[0m\n");
     kv.key = NULL;
     while(!ct_tree_next(stb->staged, &kv)){
       printf("%s\n", kv.key);
@@ -167,7 +157,7 @@ int status(int argc, char **argv, struct intls *intls){
   }
 
   if(stb->removed->len){
-    printf("\033[34m--- staged for removal ---\033[0m\n");
+    printf("\033[32m--- staged for removal ---\033[0m\n");
     kv.key = NULL;
     while(!ct_tree_next(stb->removed, &kv)){
       printf("%s\n", kv.key);
@@ -175,7 +165,7 @@ int status(int argc, char **argv, struct intls *intls){
   }
 
   if(stb->modified->len){
-    printf("\033[34m--- modified ---\033[0m\n");
+    printf("\033[32m--- modified ---\033[0m\n");
     kv.key = NULL;
     while(!ct_tree_next(stb->modified, &kv)){
       printf("%s\n", kv.key);
@@ -183,7 +173,7 @@ int status(int argc, char **argv, struct intls *intls){
   }
 
   if(stb->untracked->len){
-    printf("\033[34m--- untracked files ---\033[0m\n");
+    printf("\033[32m--- untracked files ---\033[0m\n");
     kv.key = NULL;
     while(!ct_tree_next(stb->untracked, &kv)){
       printf("%s\n", kv.key);
