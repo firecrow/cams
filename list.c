@@ -149,34 +149,34 @@ int status(int argc, char **argv, struct intls *intls){
   struct ct_leaf kv = {NULL, 0, NULL};
 
   if(stb->staged->len){
-    printf("\033[32m--- staged files ---\033[0m\n");
+    printf("staged files:\n");
     kv.key = NULL;
     while(!ct_tree_next(stb->staged, &kv)){
-      printf("%s\n", kv.key);
+      printf("  \033[32m%s\033[0m\n", kv.key);
     }
   }
 
   if(stb->removed->len){
-    printf("\033[32m--- staged for removal ---\033[0m\n");
+    printf("staged for removal:\n");
     kv.key = NULL;
     while(!ct_tree_next(stb->removed, &kv)){
-      printf("%s\n", kv.key);
+      printf("  \033[31m%s\033[0m\n", kv.key);
     }
   }
 
   if(stb->modified->len){
-    printf("\033[32m--- modified ---\033[0m\n");
+    printf("modified files:\n");
     kv.key = NULL;
     while(!ct_tree_next(stb->modified, &kv)){
-      printf("%s\n", kv.key);
+      printf("  \033[33m%s\033[0m\n", kv.key);
     }
   }
 
   if(stb->untracked->len){
-    printf("\033[32m--- untracked files ---\033[0m\n");
+    printf("untracked files:\n");
     kv.key = NULL;
     while(!ct_tree_next(stb->untracked, &kv)){
-      printf("%s\n", kv.key);
+      printf("  \033[33m%s\033[0m\n", kv.key);
     }
   }
 
