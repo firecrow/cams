@@ -196,8 +196,8 @@ struct ct_tree *slist();
 #endif
 
 
-#include "commit.c"
-#include "ent.c"
-#include "list.c"
-#include "slist.c"
-#include "utils.c"
+#include "obj/commit.c"
+#include "obj/ent.c"
+#include "obj/list.c"
+#include "obj/slist.c"
+#include "obj/utils.c"
