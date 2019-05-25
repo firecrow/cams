@@ -31,7 +31,7 @@ bool feq(char *path_a, char *path_b){
   FILE *a = dk_open(path_a, "r");
   FILE *b = dk_open(path_b, "r");
   fseek(a, 0, SEEK_END);
-  fseek(a, 0, SEEK_END);
+  fseek(b, 0, SEEK_END);
   if(ftell(a) != ftell(b)){
     return false;
   }
