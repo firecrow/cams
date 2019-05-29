@@ -46,20 +46,6 @@ bool feq(char *path_a, char *path_b){
   return true;
 }
 
-int localize_fname(char *fname){
-  int count = 0;
-  char *p = fname;
-  while(*fname != '\0'){
-    if(*fname == '.' && *fname+1 == '.'){
-      fname += 2;
-    }
-    *p++ = *fname++;
-  }
-  *fname = '\0';
-  return count;
-}
-
-
 void trimnl(char *str){
   int target = strlen(str)-1;
   if(str[target] == '\n'){
@@ -204,6 +190,7 @@ int ct_split(char *_str, char c, struct crray *arr){
 int ct_fcompare(char *apath, int alen, char *bpath, int blen){
   char ba[CT_FCOMPARE_SIZE];
   char bb[CT_FCOMPARE_SIZE];
+  char *bp, *ap;
   FILE *a, *b;
   int la, lb, r, end;
   struct stat astat;
@@ -214,7 +201,7 @@ int ct_fcompare(char *apath, int alen, char *bpath, int blen){
     alen = astat.st_size;
   }
   if(!blen){
-    xok(stat(bpath, &astat));
+    xok(stat(bpath, &bstat));
     blen = bstat.st_size;
   }
   if(alen != blen)
@@ -224,29 +211,36 @@ int ct_fcompare(char *apath, int alen, char *bpath, int blen){
   xokptr(b = fopen(bpath, "r"));
 
   la = lb = CT_FCOMPARE_SIZE;
+  ap = ba;
+  bp = bb;
+  end = 0;
   while(!end){
     do {
-      r = fread(&ba, 1, CT_FCOMPARE_SIZE, a);
+      r = fread(ap, 1, la, a);
       la -= r;
+      ap += r;
       if(!r)
         end = 1;
-    } while (!end && la < CT_FCOMPARE_SIZE);
+    } while (!end && la > 0);
     do {
-      r = fread(&bb, 1, CT_FCOMPARE_SIZE, b);
+      r = fread(bp, 1, lb, b);
       lb -= r;
+      bp += r;
       if(!r)
         end = 1;
-    } while (!end && lb < CT_FCOMPARE_SIZE);
+    } while (!end && lb > 0);
     if(la != lb)
       return (1);
 
     if(strncmp(ba, bb, CT_FCOMPARE_SIZE - la)){
-      return 1;
+      return (1);
     }
     la = lb = CT_FCOMPARE_SIZE;
+    ap = ba;
+    bp = bb;
     r = 0;
   }
-  return 0;
+  return (0);
 }
 
 int ct_fcopy(char *a, char *b){

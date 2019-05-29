@@ -27,7 +27,6 @@ int flen(char *path);
 int fexists(char *path);
 bool feq(char *path_a, char *path_b);
 char *ct_fread(char *path);
-int localize_fname(char *fname);
 int ct_split(char *_str, char c, struct crray *arr);
 void trimnl(char *str);
 int ct_subp(struct ct_subp *subp);

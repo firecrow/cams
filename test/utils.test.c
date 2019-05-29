@@ -11,7 +11,6 @@
 #include "../comp/utils.c"
 
 int main(){
-  /* dupstr */
   char astr[] = "hi there this is a string\n";
   char *bstr = dupstr(astr);
   if(!strcmp(astr, bstr))
@@ -66,11 +65,76 @@ int main(){
     printf("fail %d", len);
   printf(" feq different sizes\n");
 
+  char withnl[] = "hi this has a new line\n";
+  char withoutnl[] = "hi this has a new line";
+  char nlcontrol[] = "hi this has a new line";
+
+  trimnl(withnl);
+  if(!strncmp(withnl, nlcontrol, 1024)) 
+    printf("pass ");
+  else
+    printf("fail ");
+  printf("trim nl with nl\n");  
+
+  trimnl(withoutnl);
+  if(!strncmp(withoutnl, nlcontrol, 1024)) 
+    printf("pass ");
+  else
+    printf("fail ");
+  printf("trim nl without nl\n");  
+
+  struct crray *arr = crray_str_init();
+  struct crray *arrb = crray_str_init();
+  arrb->add(arrb, "hi");
+  arrb->add(arrb, "there");
+  arrb->add(arrb, "this");
+  arrb->add(arrb, "is");
+  arrb->add(arrb, "a");
+  arrb->add(arrb, "thing");
+  char scontent[] = "hi there this is a thing.";
+  ct_split(scontent, ' ', arr);
+
+  void *diffb = compare_arr(arr, arrb);
+  if(diffb)
+    printf("fail %s ", diffb);
+  else
+    printf("pass "); 
+  printf("ct_split test with crray\n");      
+
+  struct crray *arrc = crray_str_init();
+  struct crray *arrcontb = crray_str_init();
+  arrcontb->add(arrcontb, "hi");
+  arrcontb->add(arrcontb, "there");
+  char scontentb[] = "hi there ";
+  ct_split(scontentb, ' ', arrc);
+
+  void *diff = compare_arr(arrc, arrcontb);
+  if(diff)
+    printf("fail %s ", diff);
+  else
+    printf("pass "); 
+  printf("ct_split test with crray and following seperator\n");      
+
+  int lenb = flen("test/fixtures/A.1958.txt"); 
+  if(!ct_fcompare("test/fixtures/A.1958.txt", 0, "test/fixtures/A.same.1958.txt", 0))
+    printf("pass");
+  else
+    printf("fail");
+  printf(" ct_fcompare identical\n");
+
+  if(ct_fcompare("test/fixtures/A.1958.txt", 0, "test/fixtures/B.1958.txt", 0))
+    printf("pass");
+  else
+    printf("fail");
+  printf(" ct_fcompare different same size\n");
+
+  if(ct_fcompare("test/fixtures/A.1958.txt", 0, "test/fixtures/C.3370.txt", 0))
+    printf("pass");
+  else
+    printf("fail %d", len);
+  printf(" ct_fcompare different sizes\n");
+
   /*
-   * localize_fname
-   * trimnl
-   * ct_split
-   * ct_fcompare
    * ct_fcopy
-  */
+   */
 }
