@@ -244,16 +244,23 @@ int ct_fcompare(char *apath, int alen, char *bpath, int blen){
 }
 
 int ct_fcopy(char *a, char *b){
+  printf("-\n");
   char bb[CT_FCOMPARE_SIZE];
   int c, r;
   FILE *fa = fopen(a, "r");
   FILE *fb = fopen(b, "w");
+  xokptr(fa);
+  xokptr(fb);
+  printf("-open\n");
   while(1){
+    printf("-loop\n");
     r = fread(bb, 1, CT_FCOMPARE_SIZE, fa);
+    printf("-read\n");
     if(!r) 
       break;
     c += r;
-    fwrite(&bb, 1, r, fb);
+    printf("-write\n");
+    fwrite(bb, 1, r, fb);
   }
   return c;
 }

@@ -94,9 +94,9 @@ int main(){
   char scontent[] = "hi there this is a thing.";
   ct_split(scontent, ' ', arr);
 
-  void *diffb = compare_arr(arr, arrb);
-  if(diffb)
-    printf("fail %s ", diffb);
+  int r2 = crray_ab_cmp(arr, arrb);
+  if(r2)
+    printf("fail ");
   else
     printf("pass "); 
   printf("ct_split test with crray\n");      
@@ -108,9 +108,9 @@ int main(){
   char scontentb[] = "hi there ";
   ct_split(scontentb, ' ', arrc);
 
-  void *diff = compare_arr(arrc, arrcontb);
-  if(diff)
-    printf("fail %s ", diff);
+  int r1 = crray_ab_cmp(arrc, arrcontb);
+  if(r1)
+    printf("fail ");
   else
     printf("pass "); 
   printf("ct_split test with crray and following seperator\n");      
@@ -134,7 +134,18 @@ int main(){
     printf("fail %d", len);
   printf(" ct_fcompare different sizes\n");
 
-  /*
-   * ct_fcopy
-   */
+  printf("a\n");
+  if(fexists("./test/fixtures/A.1958.dup.txt")){
+    printf("a.1\n");
+    unlink("./test/fixtures/A.1958.dup.txt");
+  }
+  printf("b\n");
+  ct_fcopy("./test/fixtures/A.1958.txt", "./test/fixtures/A.1958.dup.txt");
+  printf("c\n");
+  if(ct_fcompare("./test/fixtures/A.1958.txt", 0, "./test/fixtures/A.1958.dup.txt", 0))
+    printf("pass");
+  else
+    printf("fail");
+  printf(" ct_fcopy\n");
+  printf("d\n");
 }
