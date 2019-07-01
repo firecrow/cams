@@ -102,7 +102,7 @@ struct ct_tree *rmlist(char *cid);
 struct ct_tree *cindex_to_tree(char *cid);
 struct commit *commit_init(char *cid);
 int show_commit(int argc, char **argv, struct intls *intls);
-int add(int argc, char **argv, struct intls *intls);
+void add();
 int unadd(int argc, char **argv, struct intls *intls);
 int rm(int argc, char **argv, struct intls *intls);
 int commit(int argc, char **argv, struct intls *intls);
@@ -157,9 +157,16 @@ struct ct_tree *slist();
   #define TIME_UTC 1
 #endif
 
+char *op;
+struct ct_tree *opkv;
+struct ct_tree *ophandlers;
+struct ct_tree *opflookup;
+struct crray *opitems;
 
 #include "comp/commit.c"
 #include "comp/ent.c"
 #include "comp/list.c"
 #include "comp/slist.c"
 #include "comp/utils.c"
+
+

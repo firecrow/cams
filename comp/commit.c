@@ -184,3 +184,14 @@ struct ct_tree *flist(){
   }
   return tree;
 }
+
+void add(){
+  int i;
+  char *path, dest[1024];
+  for(i=0;i<opitems->length;i++){
+    opitems->get(opitems, i, (void **)&path); 
+    snprintf(dest, 1024, ".cams/stage/files/%s", san_fname(path, true));
+    printf("staging '%s' in '%s'\n", path, dest);
+    ct_fcopy(path, dest);
+  }
+}
