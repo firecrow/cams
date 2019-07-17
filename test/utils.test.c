@@ -91,10 +91,10 @@ int main(){
   arrb->add(arrb, "is");
   arrb->add(arrb, "a");
   arrb->add(arrb, "thing");
-  char scontent[] = "hi there this is a thing.";
+  char scontent[] = "hi there this is a thing";
   ct_split(scontent, ' ', arr);
 
-  int r2 = crray_ab_cmp(arr, arrb);
+  int r2 = crray_cmparr(arr, arrb);
   if(r2)
     printf("fail ");
   else
@@ -108,7 +108,7 @@ int main(){
   char scontentb[] = "hi there ";
   ct_split(scontentb, ' ', arrc);
 
-  int r1 = crray_ab_cmp(arrc, arrcontb);
+  int r1 = crray_cmparr(arrc, arrcontb);
   if(r1)
     printf("fail ");
   else
@@ -134,18 +134,13 @@ int main(){
     printf("fail %d", len);
   printf(" ct_fcompare different sizes\n");
 
-  printf("a\n");
   if(fexists("./test/fixtures/A.1958.dup.txt")){
-    printf("a.1\n");
     unlink("./test/fixtures/A.1958.dup.txt");
   }
-  printf("b\n");
   ct_fcopy("./test/fixtures/A.1958.txt", "./test/fixtures/A.1958.dup.txt");
-  printf("c\n");
   if(ct_fcompare("./test/fixtures/A.1958.txt", 0, "./test/fixtures/A.1958.dup.txt", 0))
     printf("pass");
   else
     printf("fail");
   printf(" ct_fcopy\n");
-  printf("d\n");
 }
