@@ -1,0 +1,61 @@
+list
+  x basic
+  verbose
+    file changes
+    xdiff
+x status
+add/remove/untrack
+diff
+  xdiff
+commit
+push
+  scp
+pull
+  scp
+checkout
+branching
+  merging/conflicts
+  xdiff
+
+features
+  new storage format
+    hash for filenames
+    hash of cindex for commits
+    new cindex format
+      firstline parent
+      second line timestamp + millis
+      content sections
+      +c files changed in this commit
+      +r files removed in this commit
+      +u untrack files in this commit
+      +o files from prior commits
+      +m commit message
+      file entry format
+        sha1:length:path
+      migration (python)
+    sha1
+      for change detection
+    copy files
+    unit teats
+      subp tests
+    push pull client (streaming tar)
+
+initiatives
+  get working
+    x list/commit flow
+      x list
+      x status
+    > add/remove/untrack
+      add
+        add to stage
+        detect if stage is different than working
+    commit
+    push/pull
+  unit/integration tests
+    x utils
+  new commit format (sha1/new cindex)
+  push/pull client
+  xdiff
+  advanced views
+    (list verbose/diff/change search)
+  branching

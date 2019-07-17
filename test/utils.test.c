@@ -94,6 +94,7 @@ int main(){
   char scontent[] = "hi there this is a thing";
   ct_split(scontent, ' ', arr);
 
+  /*show_str_arr(arr, "from split1");*/
   int r2 = crray_cmparr(arr, arrb);
   if(r2)
     printf("fail ");
